@@ -1,8 +1,12 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
+from agent.findmove import generate_all_moves
 from referee.game import PlayerColor, Coord, Direction, \
-    Action, MoveAction, GrowAction
+    Action, MoveAction, GrowAction, Board
+
+
+import random
     
 
 class Agent:
@@ -16,6 +20,9 @@ class Agent:
         This constructor method runs when the referee instantiates the agent.
         Any setup and/or precomputation should be done here.
         """
+
+        self.board = Board()
+
         self._color = color
         match color:
             case PlayerColor.RED:
@@ -23,26 +30,19 @@ class Agent:
             case PlayerColor.BLUE:
                 print("Testing: I am playing as BLUE")
 
+
+
     def action(self, **referee: dict) -> Action:
         """
         This method is called by the referee each time it is the agent's turn
         to take an action. It must always return an action object. 
         """
 
-        # Below we have hardcoded two actions to be played depending on whether
-        # the agent is playing as BLUE or RED. Obviously this won't work beyond
-        # the initial moves of the game, so you should use some game playing
-        # technique(s) to determine the best action to take.
-        match self._color:
-            case PlayerColor.RED:
-                print("Testing: RED is playing a MOVE action")
-                return MoveAction(
-                    Coord(0, 3),
-                    [Direction.Down]
-                )
-            case PlayerColor.BLUE:
-                print("Testing: BLUE is playing a GROW action")
-                return GrowAction()
+        potential_moves = generate_all_moves(self.board, self._color)
+        if potential_moves:
+            return random.choice(potential_moves)
+        else:
+            return GrowAction()
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
