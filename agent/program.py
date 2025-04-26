@@ -60,6 +60,39 @@ class Agent:
                 print(f"Testing: {color} played MOVE action:")
                 print(f"  Coord: {coord}")
                 print(f"  Directions: {dirs_text}")
+                
+
+                try:
+                    # dirs is a list!
+                    new_coordinate = coord + dirs[0]
+                    is_list = True
+                except TypeError:
+                    # dirs is not a list!
+                    new_coordinate = coord + dirs
+                    is_list = False
+                
+                # if not hop
+                if self.board._state.get(new_coordinate) == "LilyPad":
+                    self.board._state[new_coordinate] = color
+                    self.board._state[coord] = None
+            
+                # if hop
+                elif self.board._state.get(new_coordinate):
+                    hop_coordinate = coord
+                    if is_list:
+                        for direction in dirs:
+                            self.board._state[hop_coordinate] = None
+                            hop_coordinate = hop_coordinate + direction + direction
+                    if not is_list:
+                        self.board._state[hop_coordinate] = None
+                        hop_coordinate = hop_coordinate + dirs + dirs
+            
+                    self.board._state[hop_coordinate] = color
+
+
+                        
+
+
             case GrowAction():
                 print(f"Testing: {color} played GROW action")
             case _:

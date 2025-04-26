@@ -81,7 +81,10 @@ def find_frogs(board: Board, player_colour: PlayerColor) -> list[Coord]:
         desired_cell_state = PlayerColor.BLUE
     
     for coordinate, state in board._state.items():
-        if state.state == desired_cell_state:
-            frog_locations.append(coordinate)
+        try:
+            if state.state == desired_cell_state:
+                frog_locations.append(coordinate)
+        except AttributeError:
+            pass
     
     return frog_locations
