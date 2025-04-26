@@ -24,16 +24,19 @@ def find_moves(board: Board, starting_coordinate: Coord) -> list[MoveAction] | N
     for direction in VALID_MOVES:
         try:
             new_coordinate = starting_coordinate + direction
+            ##Catch illegal coordinates
+            if new_coordinate.c < 0 or new_coordinate.c > 7 or new_coordinate.r < 0 or new_coordinate.r > 7:
+                break
             # if it lands on blue or red frog we try to hop over frog
-            if (board._state.get(new_coordinate).state == PlayerColor.BLUE or
-                board._state.get(new_coordinate).state == PlayerColor.RED):
+            if (board._state.get(new_coordinate).state == CellState(PlayerColor.BLUE).state or
+                board._state.get(new_coordinate).state == CellState(PlayerColor.RED).state):
                 hop_coordinate = new_coordinate + direction
-                if board._state.get(hop_coordinate).state == "LilyPad":
+                if board._state.get(hop_coordinate).state == CellState("LilyPad").state:
                     direction_list = [direction]
                     hop(board, starting_coordinate, VALID_MOVES, potential_moves, direction_list)
             
             # if it lands on lilypad we can just move :)
-            if board._state.get(new_coordinate).state == "LilyPad":
+            if board._state.get(new_coordinate).state == CellState("LilyPad").state:
                 potential_moves.append(MoveAction(starting_coordinate, direction))
 
         except ValueError:
@@ -56,10 +59,10 @@ def hop(board, starting_coordinate, VALID_MOVES, potential_moves, direction_list
             pass
 
         new_coordinate = hop_coordinate + direction
-        if (board._state.get(new_coordinate).state == PlayerColor.BLUE or 
-            board._state.get(new_coordinate).state == PlayerColor.RED):
+        if (board._state.get(new_coordinate).state == CellState(PlayerColor.BLUE).state or
+            board._state.get(new_coordinate).state == CellState(PlayerColor.RED).state):
             hop_hop_coordinate = new_coordinate + direction
-            if board._state.get(hop_hop_coordinate).state == "LilyPad":
+            if board._state.get(hop_hop_coordinate).state == CellState("LilyPad").state:
                 hop(board, starting_coordinate, VALID_MOVES, potential_moves, direction_list + [direction])
 
 # takes in the board and player colour and outputs a list of all move_actions

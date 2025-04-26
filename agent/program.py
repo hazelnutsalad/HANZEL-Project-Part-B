@@ -7,7 +7,9 @@ from referee.game import PlayerColor, Coord, Direction, \
 
 
 import random
-    
+
+from referee.game.board import CellState
+
 
 class Agent:
     """
@@ -60,38 +62,22 @@ class Agent:
                 print(f"Testing: {color} played MOVE action:")
                 print(f"  Coord: {coord}")
                 print(f"  Directions: {dirs_text}")
-                
 
-                try:
-                    # dirs is a list!
-                    new_coordinate = coord + dirs[0]
-                    is_list = True
-                except TypeError:
-                    # dirs is not a list!
-                    new_coordinate = coord + dirs
-                    is_list = False
-                
-                # if not hop
-                if self.board._state.get(new_coordinate) == "LilyPad":
-                    self.board._state[new_coordinate] = color
-                    self.board._state[coord] = None
+                # set current coordinate to empty
+                self.board._state[action.coord] = CellState()
+                new_coordinate = action.coord
+
             
-                # if hop
-                elif self.board._state.get(new_coordinate):
-                    hop_coordinate = coord
-                    if is_list:
-                        for direction in dirs:
-                            self.board._state[hop_coordinate] = None
-                            hop_coordinate = hop_coordinate + direction + direction
-                    if not is_list:
-                        self.board._state[hop_coordinate] = None
-                        hop_coordinate = hop_coordinate + dirs + dirs
-            
-                    self.board._state[hop_coordinate] = color
-
-
-                        
-
+                for direction in action.directions:
+                    new_coordinate += direction
+                    cell_state = self.board._state.get(new_coordinate)
+                    if cell_state.state == CellState("LilyPad").state:
+                        self.board._state[new_coordinate] = CellState()
+                    elif cell_state.state == CellState(PlayerColor.RED).state or cell_state.state == CellState(PlayerColor.BLUE).state:
+                        new_coordinate += direction
+                self.board._state[new_coordinate] = CellState(color)
+                print("What we think board looks like:")
+                print(self.board.render(True, True))
 
             case GrowAction():
                 print(f"Testing: {color} played GROW action")
