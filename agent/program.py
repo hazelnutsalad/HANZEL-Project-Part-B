@@ -77,9 +77,9 @@ class Agent:
                 for direction in action.directions:
                     new_coordinate += direction
                     cell_state = self.board._state.get(new_coordinate)
-                    if cell_state.state == CellState("LilyPad").state:
+                    if cell_state.state == "LilyPad":
                         self.board._state[new_coordinate] = CellState()
-                    elif cell_state.state == CellState(PlayerColor.RED).state or cell_state.state == CellState(PlayerColor.BLUE).state:
+                    elif cell_state.state in [PlayerColor.RED, PlayerColor.BLUE]:
                         new_coordinate += direction
                 self.board._state[new_coordinate] = CellState(color)
                 # print("What we think board looks like:")
