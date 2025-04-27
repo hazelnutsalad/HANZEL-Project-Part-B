@@ -6,7 +6,7 @@ from referee.game import PlayerColor, Coord, Direction, \
     Action, MoveAction, GrowAction, Board
 
 
-import random
+import random, time
 
 from referee.game.board import CellState
 
@@ -40,7 +40,13 @@ class Agent:
         to take an action. It must always return an action object. 
         """
 
+        start = time.time()
+
         potential_moves = generate_all_moves(self.board, self._color)
+
+        end = time.time()
+        print(f"Move took {end-start} seconds to compute\n")
+
         if potential_moves:
             return random.choice(potential_moves)
         else:
