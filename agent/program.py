@@ -1,7 +1,7 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-from agent.findmove import generate_all_moves
+from agent.findmove import generate_all_moves, find_frogs
 from referee.game import PlayerColor, Coord, Direction, \
     Action, MoveAction, GrowAction, Board
 
@@ -87,5 +87,18 @@ class Agent:
 
             case GrowAction():
                 print(f"Testing: {color} played GROW action")
+
+                frog_locations = find_frogs(self.board, color)
+
+                for frog in frog_locations:
+                    for direction in Direction:
+                        # try block handles us checking adjacent cells out of bounds
+                        try:
+                            new_coordinate = frog + direction
+                            if self.board._state.get(new_coordinate) == CellState():
+                                self.board._state[new_coordinate] = CellState("LilyPad")
+                        except ValueError:
+                            pass
+
             case _:
                 raise ValueError(f"Unknown action type: {action}")
