@@ -82,8 +82,8 @@ class Agent:
                     elif cell_state.state == CellState(PlayerColor.RED).state or cell_state.state == CellState(PlayerColor.BLUE).state:
                         new_coordinate += direction
                 self.board._state[new_coordinate] = CellState(color)
-                print("What we think board looks like:")
-                print(self.board.render(True, True))
+                # print("What we think board looks like:")
+                # print(self.board.render(True, True))
 
             case GrowAction():
                 print(f"Testing: {color} played GROW action")

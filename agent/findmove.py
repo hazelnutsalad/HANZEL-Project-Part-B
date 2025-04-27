@@ -32,8 +32,7 @@ def find_moves(board: Board, starting_coordinate: Coord) -> list[MoveAction] | N
                 board._state.get(new_coordinate).state == CellState(PlayerColor.RED).state):
                 hop_coordinate = new_coordinate + direction
                 if board._state.get(hop_coordinate).state == CellState("LilyPad").state:
-                    direction_list = [direction]
-                    hop(board, starting_coordinate, VALID_MOVES, potential_moves, direction_list)
+                    hop(board, starting_coordinate, VALID_MOVES, potential_moves, [direction])
             
             # if it lands on lilypad we can just move :)
             if board._state.get(new_coordinate).state == CellState("LilyPad").state:
@@ -54,16 +53,17 @@ def hop(board, starting_coordinate, VALID_MOVES, potential_moves, direction_list
     for direction in VALID_MOVES:
         # check we aren't hopping backwards
         if direction_list[-1] == Direction.Left and direction == Direction.Right:
-            pass
+            continue
         elif direction_list[-1] == Direction.Right and direction == Direction.Left:
-            pass
+            continue
 
         new_coordinate = hop_coordinate + direction
         if (board._state.get(new_coordinate).state == CellState(PlayerColor.BLUE).state or
             board._state.get(new_coordinate).state == CellState(PlayerColor.RED).state):
             hop_hop_coordinate = new_coordinate + direction
             if board._state.get(hop_hop_coordinate).state == CellState("LilyPad").state:
-                hop(board, starting_coordinate, VALID_MOVES, potential_moves, direction_list + [direction])
+                new_direction_list = direction_list + [direction]
+                hop(board, starting_coordinate, VALID_MOVES, potential_moves, new_direction_list)
 
 # takes in the board and player colour and outputs a list of all move_actions
 def generate_all_moves(board: Board, player_colour: PlayerColor) -> list[MoveAction] | None:
