@@ -1,4 +1,5 @@
 from enum import Enum
+from referee.game import MoveAction, Direction
 
 BOARD_N = 8
 
@@ -13,6 +14,26 @@ class DirectionOffsets(Enum):
     DownLeft    = 7
     Left        = -1
 
+    # NOTE: untested?? am i allowed to do this
+    def convert_to_direction(self):
+        match self:
+            case DirectionOffsets.UpLeft:
+                return Direction.UpLeft
+            case DirectionOffsets.Up:
+                return Direction.Up
+            case DirectionOffsets.UpRight:
+                return Direction.UpRight
+            case DirectionOffsets.Right:
+                return Direction.Right
+            case DirectionOffsets.DownRight:
+                return Direction.DownRight
+            case DirectionOffsets.Down:
+                return Direction.Down
+            case DirectionOffsets.DownLeft:
+                return Direction.DownLeft
+            case DirectionOffsets.Left:
+                return Direction.Left
+
 class PlayerColour(Enum):
     RED = 0
     BLUE = 1
@@ -23,9 +44,6 @@ class GameState:
     Our internal representation of the game state
     Contains a 8x8 character array representing the board, and 2 arrays containing the frog locations
     """
-
-    VALID_MOVES_RED = [DirectionOffsets.DownRight, DirectionOffsets.Down, DirectionOffsets.DownLeft, DirectionOffsets.Left, DirectionOffsets.Right]
-    VALID_MOVES_BLUE = [DirectionOffsets.UpRight, DirectionOffsets.Up, DirectionOffsets.UpLeft, DirectionOffsets.Left, DirectionOffsets.Right]
 
     # sets up the default board state
     def __init__(self):
@@ -108,9 +126,40 @@ class Frog:
         self.location = location
         self.colour = colour
     
-    # move onto an adjacent lilypad
-    def step(self, game_state: GameState, start_index: int, end_index: int):
-        pass
+    # updates location of frog (setter for location)
+    def move_frog(self, new_index: int):
+        self.location = new_index
+
+class Step:
+    """
+    Represents a single step onto a lilypad
+    """
+    def __init__(self, start_index: int, direction_offset: DirectionOffsets):
+        self.start_index = start_index
+        self.direction_offset = direction_offset
+        self.end_index = start_index + direction_offset.value
+
+    # note we have direction NOT as a list
+    def convert_to_move_action(self):
+        return MoveAction(self.start_index, self.direction_offset.convert_to_direction())
+
+class Hop:
+    """
+    Represents (potentially multiple) hop
+    """
+    def __init__(self, start_index: int, direction_offsets: list[DirectionOffsets]):
+        self.start_index = start_index
+        self.direction_offsets = direction_offsets
+        self.end_index = start_index + sum([offset.value for offset in direction_offsets])
+
+    # note we have direction as list
+    def convert_to_move_action(self):
+        return MoveAction(self.start_index, 
+            [offset.convert_to_direction for offset in self.direction_offsets])
+
+# so we can have array of Move in our generate moves function
+Move = Step | Hop
+
 
 
 game_state = GameState()
