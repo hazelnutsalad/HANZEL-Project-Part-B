@@ -13,6 +13,10 @@ class DirectionOffsets(Enum):
     DownLeft    = 7
     Left        = -1
 
+class PlayerColour(Enum):
+    RED = 0
+    BLUE = 1
+
 
 
 class GameState:
@@ -20,6 +24,9 @@ class GameState:
     Our internal representation of the game state
     Contains a 8x8 character array representing the board, and 2 arrays containing the frog locations
     """
+
+    VALID_MOVES_RED = [DirectionOffsets.DownRight, DirectionOffsets.Down, DirectionOffsets.DownLeft, DirectionOffsets.Left, DirectionOffsets.Right]
+    VALID_MOVES_BLUE = [DirectionOffsets.UpRight, DirectionOffsets.Up, DirectionOffsets.UpLeft, DirectionOffsets.Left, DirectionOffsets.Right]
 
     # sets up the default board state
     def __init__(self):
@@ -32,18 +39,16 @@ class GameState:
                       '*', 'L', 'L', 'L', 'L', 'L', 'L', '*',
                       'L', 'B', 'B', 'B', 'B', 'B', 'B', 'L']
         
-        # i think we should make our own coord type to represent this?? since Coord is specific to
-        # their board type
-
-        # we could just have a single size 64 array so we don't need coord type???
-        # e.g. board[1, 3] -> board[12]
-        # then we calculate the moves based on offsets if we are at board[12] and we want to move
-        # right it would be board[12+1] or move down is board[12+8]???
-        # might be faster and probably not that annoying to implement if we put a bunch of functions
-        # in the board class???
-
         self.red_frog_locations = [1, 2, 3, 4, 5, 6]
         self.blue_frog_locations = [57, 58, 59, 60, 61, 62]
+
+    def __str__(self):
+        string = ''
+        for i in range(0, BOARD_N):
+            for j in range(0, BOARD_N):
+                string += self.board[i*BOARD_N + j] + ' '
+            string += '\n'
+        return string
 
     # return the adjacent squares to the given coordinate that are in bound
     @staticmethod
@@ -66,12 +71,34 @@ class GameState:
             case DirectionOffsets.DownRight:
                 return (index % BOARD_N == 7) or (56 <= index < 64)
 
-    # returns the adjacent in-bounds squares
+    # returns the adjacent indicies of in-bounds squares
     def get_adjacent_indicies(self, index: int):
         return [index + direction.value for direction in DirectionOffsets if not self.is_out_of_bounds(index, direction)]
     
+    # returns the adjacent in-bounds squares
     def get_adjacent_squares(self, index: int):
-        
+        return [self.board[index + direction.value] for direction in DirectionOffsets if not self.is_out_of_bounds(index, direction)]
 
-board = GameState()
-print(board.get_adjacent_squares(8))
+    # change empty squares around index to lilypads
+    def grow_around_frog(self, index: int):
+        for square in self.get_adjacent_indicies(index):
+            if self.board[square] == '*':
+                self.board[square] = 'L'
+    
+    def apply_grow_action(self, colour: PlayerColour):
+        match colour:
+            case PlayerColour.RED:
+                for frog in self.red_frog_locations:
+                    self.grow_around_frog(frog)
+            case PlayerColour.BLUE:
+                for frog in self.blue_frog_locations:
+                    self.grow_around_frog(frog)
+    
+
+
+
+
+game_state = GameState()
+print(game_state)
+game_state.apply_grow_action(PlayerColour.RED)
+print(game_state)
