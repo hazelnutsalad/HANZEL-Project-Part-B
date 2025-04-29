@@ -18,7 +18,6 @@ class PlayerColour(Enum):
     BLUE = 1
 
 
-
 class GameState:
     """
     Our internal representation of the game state
@@ -39,8 +38,11 @@ class GameState:
                       '*', 'L', 'L', 'L', 'L', 'L', 'L', '*',
                       'L', 'B', 'B', 'B', 'B', 'B', 'B', 'L']
         
-        self.red_frog_locations = [1, 2, 3, 4, 5, 6]
-        self.blue_frog_locations = [57, 58, 59, 60, 61, 62]
+        red_frog_locations = [1, 2, 3, 4, 5, 6]
+        blue_frog_locations = [57, 58, 59, 60, 61, 62]
+
+        self.red_frogs = [Frog(index, PlayerColour.RED) for index in red_frog_locations]
+        self.blue_frogs = [Frog(index, PlayerColour.BLUE) for index in blue_frog_locations]
 
     def __str__(self):
         string = ''
@@ -88,14 +90,27 @@ class GameState:
     def apply_grow_action(self, colour: PlayerColour):
         match colour:
             case PlayerColour.RED:
-                for frog in self.red_frog_locations:
-                    self.grow_around_frog(frog)
+                for frog in self.red_frogs:
+                    self.grow_around_frog(frog.location)
             case PlayerColour.BLUE:
-                for frog in self.blue_frog_locations:
-                    self.grow_around_frog(frog)
+                for frog in self.blue_frogs:
+                    self.grow_around_frog(frog.location)
+
+
+class Frog:
+    """ 
+    Frog object containing a colour and position
+    Contains methods to move / hop and hopefully eventually useful methods / attributes for our
+    eval function
+    """
+
+    def __init__(self, location: int, colour: PlayerColour):
+        self.location = location
+        self.colour = colour
     
-
-
+    # move onto an adjacent lilypad
+    def step(self, game_state: GameState, start_index: int, end_index: int):
+        pass
 
 
 game_state = GameState()
