@@ -1,10 +1,10 @@
 from enum import Enum
-from referee.game import MoveAction, Direction
+from referee.game import MoveAction, Direction, BOARD_N
 
-BOARD_N = 8
-
-# enum which contains the offsets for each possible direction
-class DirectionOffsets(Enum):
+class DirectionOffset(Enum):
+    """
+    Enum which contains the offsets for each possible direction
+    """
     UpLeft      = -9
     Up          = -8
     UpRight     = -7
@@ -14,24 +14,24 @@ class DirectionOffsets(Enum):
     DownLeft    = 7
     Left        = -1
 
-    # NOTE: untested?? am i allowed to do this
+    # convers to Direction
     def convert_to_direction(self):
         match self:
-            case DirectionOffsets.UpLeft:
+            case DirectionOffset.UpLeft:
                 return Direction.UpLeft
-            case DirectionOffsets.Up:
+            case DirectionOffset.Up:
                 return Direction.Up
-            case DirectionOffsets.UpRight:
+            case DirectionOffset.UpRight:
                 return Direction.UpRight
-            case DirectionOffsets.Right:
+            case DirectionOffset.Right:
                 return Direction.Right
-            case DirectionOffsets.DownRight:
+            case DirectionOffset.DownRight:
                 return Direction.DownRight
-            case DirectionOffsets.Down:
+            case DirectionOffset.Down:
                 return Direction.Down
-            case DirectionOffsets.DownLeft:
+            case DirectionOffset.DownLeft:
                 return Direction.DownLeft
-            case DirectionOffsets.Left:
+            case DirectionOffset.Left:
                 return Direction.Left
 
 class PlayerColour(Enum):
@@ -72,32 +72,33 @@ class GameState:
 
     # return the adjacent squares to the given coordinate that are in bound
     @staticmethod
-    def is_out_of_bounds(index: int, direction: DirectionOffsets):
+    def is_out_of_bounds(index: int, direction: DirectionOffset):
         match direction:
-            case DirectionOffsets.Left:
+            case DirectionOffset.Left:
                 return index % BOARD_N == 0
-            case DirectionOffsets.Right:
+            case DirectionOffset.Right:
                 return index % BOARD_N == 7
-            case DirectionOffsets.Up:
+            case DirectionOffset.Up:
                 return 0 <= index < 8
-            case DirectionOffsets.Down:
+            case DirectionOffset.Down:
                 return 56 <= index < 64
-            case DirectionOffsets.UpLeft:
+            case DirectionOffset.UpLeft:
                 return (index % BOARD_N == 0) or (0 <= index < 8)
-            case DirectionOffsets.UpRight:
+            case DirectionOffset.UpRight:
                 return (index % BOARD_N == 7) or (0 <= index < 8)
-            case DirectionOffsets.DownLeft:
+            case DirectionOffset.DownLeft:
                 return (index % BOARD_N == 0) or (56 <= index < 64)
-            case DirectionOffsets.DownRight:
+            case DirectionOffset.DownRight:
                 return (index % BOARD_N == 7) or (56 <= index < 64)
 
     # returns the adjacent indicies of in-bounds squares
     def get_adjacent_indicies(self, index: int):
-        return [index + direction.value for direction in DirectionOffsets if not self.is_out_of_bounds(index, direction)]
+        return [index + direction.value for direction in DirectionOffset if not self.is_out_of_bounds(index, direction)]
     
     # returns the adjacent in-bounds squares
     def get_adjacent_squares(self, index: int):
-        return [self.board[index + direction.value] for direction in DirectionOffsets if not self.is_out_of_bounds(index, direction)]
+        return [self.board[index + direction.value] for direction in DirectionOffset 
+                if not self.is_out_of_bounds(index, direction)]
 
     # change empty squares around index to lilypads
     def grow_around_frog(self, index: int):
@@ -105,6 +106,7 @@ class GameState:
             if self.board[square] == '*':
                 self.board[square] = 'L'
     
+    # loops over all frogs of given colour to perform a grow action for that colour
     def apply_grow_action(self, colour: PlayerColour):
         match colour:
             case PlayerColour.RED:
@@ -134,7 +136,7 @@ class Step:
     """
     Represents a single step onto a lilypad
     """
-    def __init__(self, start_index: int, direction_offset: DirectionOffsets):
+    def __init__(self, start_index: int, direction_offset: DirectionOffset):
         self.start_index = start_index
         self.direction_offset = direction_offset
         self.end_index = start_index + direction_offset.value
@@ -147,7 +149,7 @@ class Hop:
     """
     Represents (potentially multiple) hop
     """
-    def __init__(self, start_index: int, direction_offsets: list[DirectionOffsets]):
+    def __init__(self, start_index: int, direction_offsets: list[DirectionOffset]):
         self.start_index = start_index
         self.direction_offsets = direction_offsets
         self.end_index = start_index + sum([offset.value for offset in direction_offsets])
@@ -166,3 +168,4 @@ game_state = GameState()
 print(game_state)
 game_state.apply_grow_action(PlayerColour.RED)
 print(game_state)
+print(DirectionOffset.Right.convert_to_direction())
