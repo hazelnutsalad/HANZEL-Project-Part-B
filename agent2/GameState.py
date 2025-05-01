@@ -1,5 +1,6 @@
 from enum import Enum
 from referee.game import MoveAction, Direction, BOARD_N
+from Move import Step
 
 class DirectionOffset(Enum):
     """
@@ -33,6 +34,12 @@ class DirectionOffset(Enum):
                 return Direction.DownLeft
             case DirectionOffset.Left:
                 return Direction.Left
+            
+    def __add__(self, other: int) -> int:
+        return self.value + other
+    
+    def __mul__(self, n: int) -> int:
+        return n * self.value
 
 class PlayerColour(Enum):
     RED = 0
@@ -70,7 +77,7 @@ class GameState:
             string += '\n'
         return string
 
-    # return the adjacent squares to the given coordinate that are in bound
+    # check if move if out of bounds
     @staticmethod
     def is_out_of_bounds(index: int, direction: DirectionOffset):
         match direction:
@@ -93,12 +100,31 @@ class GameState:
 
     # returns the adjacent indicies of in-bounds squares
     def get_adjacent_indicies(self, index: int):
-        return [index + direction.value for direction in DirectionOffset if not self.is_out_of_bounds(index, direction)]
+        return [index + direction.value for direction in DirectionOffset 
+                if not self.is_out_of_bounds(index, direction)]
     
     # returns the adjacent in-bounds squares
     def get_adjacent_squares(self, index: int):
         return [self.board[index + direction.value] for direction in DirectionOffset 
                 if not self.is_out_of_bounds(index, direction)]
+    
+    # returns adjacent indicies of in-bound squares restricted to certain directions
+    def get_adjacent_indicies_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
+        return [index + direction.value for direction in restricted_directions
+                if not self.is_out_of_bounds(index, direction)]
+    
+    # returns adjacent in-bounds squares restricted to certain directions
+    def get_adjacent_squares_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
+        return [self.board[index + direction.value] for direction in restricted_directions
+                if not self.is_out_of_bounds(index, direction)]
+    
+    # returns possible moves one step away from this index given a list of allowable directions
+    def get_adjacent_moves(self, index:int, restricted_directions: list[DirectionOffset], 
+                           move_list: list[Step | Hop]):
+        adjacent_moves = []
+        for direction in restricted_directions:
+            if self.board[index + direction.value]
+
 
     # change empty squares around index to lilypads
     def grow_around_frog(self, index: int):
@@ -132,40 +158,11 @@ class Frog:
     def move_frog(self, new_index: int):
         self.location = new_index
 
-class Step:
-    """
-    Represents a single step onto a lilypad
-    """
-    def __init__(self, start_index: int, direction_offset: DirectionOffset):
-        self.start_index = start_index
-        self.direction_offset = direction_offset
-        self.end_index = start_index + direction_offset.value
-
-    # note we have direction NOT as a list
-    def convert_to_move_action(self):
-        return MoveAction(self.start_index, self.direction_offset.convert_to_direction())
-
-class Hop:
-    """
-    Represents (potentially multiple) hop
-    """
-    def __init__(self, start_index: int, direction_offsets: list[DirectionOffset]):
-        self.start_index = start_index
-        self.direction_offsets = direction_offsets
-        self.end_index = start_index + sum([offset.value for offset in direction_offsets])
-
-    # note we have direction as list
-    def convert_to_move_action(self):
-        return MoveAction(self.start_index, 
-            [offset.convert_to_direction for offset in self.direction_offsets])
-
-# so we can have array of Move in our generate moves function
-Move = Step | Hop
-
-
 
 game_state = GameState()
 print(game_state)
 game_state.apply_grow_action(PlayerColour.RED)
 print(game_state)
 print(DirectionOffset.Right.convert_to_direction())
+print(DirectionOffset.Left * 5 + DirectionOffset.Right.value)
+print(DirectionOffset.UpRight + 21)

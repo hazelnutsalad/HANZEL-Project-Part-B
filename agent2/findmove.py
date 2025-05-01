@@ -1,45 +1,31 @@
-# Heavily adapted from our assignment 1 submission
-# contains function which takes in a board state and a player color and returns a list of all possible moves for that player
 
-from referee.game import PlayerColor, Coord, Direction, MoveAction, Board
-from referee.game.board import CellState
+from GameState import GameState, Frog, DirectionOffset, PlayerColour
+from referee.game import MoveAction, Direction
 
 
-# todo: there is a illegal moves set in game which might be useful?
-VALID_MOVES_RED = [Direction.Down, Direction.DownLeft, Direction.DownRight, Direction.Left, Direction.Right]
-VALID_MOVES_BLUE = [Direction.Up, Direction.UpLeft, Direction.UpRight, Direction.Left, Direction.Right]
+VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOffset.DownLeft, DirectionOffset.Left, DirectionOffset.Right]
+VALID_MOVES_BLUE = [DirectionOffset.UpRight, DirectionOffset.Up, DirectionOffset.UpLeft, DirectionOffset.Left, DirectionOffset.Right]
 
-# function which takes in a board state, and a coordinate that contains a frog and finds all of the moves for that frog
-def find_moves(board: Board, starting_coordinate: Coord) -> list[MoveAction] | None:
-    cell_state = board._state.get(starting_coordinate).state
-    if cell_state == PlayerColor.RED:
-        VALID_MOVES = VALID_MOVES_RED
-    elif cell_state == PlayerColor.BLUE:
-        VALID_MOVES = VALID_MOVES_BLUE
-    else:
-        raise Exception("Invalid starting cell state for coordinate")
-    
+
+# function which takes in a board state and a frog and finds all the moves for that frog
+def find_moves(game_state: GameState, frog: Frog) -> list[MoveAction] | None:
+    colour = frog.colour
+
+    match colour:
+        case PlayerColour.RED:
+            VALID_MOVES = VALID_MOVES_RED
+        case PlayerColour.BLUE:
+            VALID_MOVES = VALID_MOVES_BLUE
+
+    # should this even be move action???? it might be easier to just convert to move action at very
+    # end (seems overcomplicated rn but probably easier when using min/max)
+    # we can make our own move class? with method to convert to MoveAction?
     potential_moves = []
-    
-    for direction in VALID_MOVES:
-        try:
-            new_coordinate = starting_coordinate + direction
-            ##Catch illegal coordinates
-            if new_coordinate.c < 0 or new_coordinate.c > 7 or new_coordinate.r < 0 or new_coordinate.r > 7:
-                break
-            # if it lands on blue or red frog we try to hop over frog
-            if (board._state.get(new_coordinate).state == CellState(PlayerColor.BLUE).state or
-                board._state.get(new_coordinate).state == CellState(PlayerColor.RED).state):
-                hop_coordinate = new_coordinate + direction
-                if board._state.get(hop_coordinate).state == CellState("LilyPad").state:
-                    hop(board, starting_coordinate, VALID_MOVES, potential_moves, [direction])
-            
-            # if it lands on lilypad we can just move :)
-            if board._state.get(new_coordinate).state == CellState("LilyPad").state:
-                potential_moves.append(MoveAction(starting_coordinate, direction))
 
-        except ValueError:
-            pass
+    for square in game_state.get_adjacent_squares_restricted(frog.location, VALID_MOVES):
+        # lilypad
+        if square == 'L':
+            potential_moves.append()
     
     return potential_moves
 
