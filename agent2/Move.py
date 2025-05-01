@@ -9,6 +9,7 @@ class Step:
         self.start_index = start_index
         self.direction_offset = direction_offset
         self.end_index = start_index + direction_offset.value
+        self.evaluation = 0
 
     # note we have direction NOT as a list
     def convert_to_move_action(self):
