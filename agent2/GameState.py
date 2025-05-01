@@ -1,6 +1,6 @@
 from enum import Enum
 from referee.game import MoveAction, Direction, BOARD_N
-from Move import Step
+from Move import *
 
 class DirectionOffset(Enum):
     """
@@ -100,31 +100,24 @@ class GameState:
 
     # returns the adjacent indicies of in-bounds squares
     def get_adjacent_indicies(self, index: int):
-        return [index + direction.value for direction in DirectionOffset 
+        return [index + direction for direction in DirectionOffset 
                 if not self.is_out_of_bounds(index, direction)]
     
     # returns the adjacent in-bounds squares
     def get_adjacent_squares(self, index: int):
-        return [self.board[index + direction.value] for direction in DirectionOffset 
+        return [self.board[index + direction] for direction in DirectionOffset 
                 if not self.is_out_of_bounds(index, direction)]
     
     # returns adjacent indicies of in-bound squares restricted to certain directions
     def get_adjacent_indicies_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
-        return [index + direction.value for direction in restricted_directions
+        return [index + direction for direction in restricted_directions
                 if not self.is_out_of_bounds(index, direction)]
     
     # returns adjacent in-bounds squares restricted to certain directions
     def get_adjacent_squares_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
-        return [self.board[index + direction.value] for direction in restricted_directions
+        return [self.board[index + direction] for direction in restricted_directions
                 if not self.is_out_of_bounds(index, direction)]
     
-    # returns possible moves one step away from this index given a list of allowable directions
-    def get_adjacent_moves(self, index:int, restricted_directions: list[DirectionOffset], 
-                           move_list: list[Step | Hop]):
-        adjacent_moves = []
-        for direction in restricted_directions:
-            if self.board[index + direction.value]
-
 
     # change empty squares around index to lilypads
     def grow_around_frog(self, index: int):

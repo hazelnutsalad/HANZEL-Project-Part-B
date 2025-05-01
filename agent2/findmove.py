@@ -1,6 +1,7 @@
 
 from GameState import GameState, Frog, DirectionOffset, PlayerColour
 from referee.game import MoveAction, Direction
+from Move import *
 
 
 VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOffset.DownLeft, DirectionOffset.Left, DirectionOffset.Right]
@@ -17,63 +18,59 @@ def find_moves(game_state: GameState, frog: Frog) -> list[MoveAction] | None:
         case PlayerColour.BLUE:
             VALID_MOVES = VALID_MOVES_BLUE
 
-    # should this even be move action???? it might be easier to just convert to move action at very
-    # end (seems overcomplicated rn but probably easier when using min/max)
-    # we can make our own move class? with method to convert to MoveAction?
     potential_moves = []
 
-    for square in game_state.get_adjacent_squares_restricted(frog.location, VALID_MOVES):
+    get_adjacent_moves(game_state, frog.location, VALID_MOVES, potential_moves)
+
+
+# appends possible moves one step away from this index given a list of allowable directions
+def get_adjacent_moves(game_state: GameState, index: int, 
+                       restricted_directions: list[DirectionOffset], move_list: list[Move]):
+    for direction in restricted_directions:
         # lilypad
-        if square == 'L':
-            potential_moves.append()
-    
-    return potential_moves
+        if game_state.board[index + direction] == 'L':
+            move_list.append(Step(index, direction))
 
-def hop(board, starting_coordinate, VALID_MOVES, potential_moves, direction_list):
-    potential_moves.append(MoveAction(starting_coordinate, direction_list))
+        # hop
+        if game_state.board[index + direction] == 'B' or game_state.board[index + direction] == 'R':
+            if game_state.board[index + 2 * direction] == 'L':
+                start_hop(game_state, index, direction, move_list, restricted_directions)
 
-    hop_coordinate = starting_coordinate
-    for direction in direction_list:
-        hop_coordinate = hop_coordinate + direction + direction
+# first time hopping we have as separate func since logic is a bit different
+def start_hop(game_state: GameState, start_index: int, start_direction: DirectionOffset,
+              move_list: list[Move], restricted_directions: list[DirectionOffset]):
+    # note we check that we land on lilypad before calling this so we know it is valid hop
+    hop_history = [start_direction]
+    move_list.append(Hop(start_index, hop_history))
+    hop(game_state, start_index, move_list, restricted_directions, hop_history)
 
-    for direction in VALID_MOVES:
-        # check we aren't hopping backwards
-        if direction_list[-1] == Direction.Left and direction == Direction.Right:
-            continue
-        elif direction_list[-1] == Direction.Right and direction == Direction.Left:
-            continue
+# now we need to look for multiple directions when hopping, and have to keep track of dirs we hop
+def hop(game_state: GameState, start_index: int, move_list: list[Move], 
+        restricted_directions: list[DirectionOffset], hop_history: list[DirectionOffset]):
+    # NOTE: this breaks if we change how we add things to move_list so be careful!!
+    # but saves us from having to recompute this (could also just add it to signature ??)
+    current_index = move_list[-1].end_index
+    last_direction = hop_history[-1]
+    for direction in restricted_directions:
+        if direction + last_direction.value != 0:
+            if (game_state.board[current_index + direction] == 'B' or 
+                    game_state.board[current_index + direction] == 'R'):
+                if game_state.board[current_index + 2 * direction] == 'L':
+                    hop_history.append(direction)
+                    move_list.append(Hop(start_index, hop_history))
+                    hop(game_state, start_index, move_list, restricted_directions, hop_history)
 
-        new_coordinate = hop_coordinate + direction
-        if (board._state.get(new_coordinate).state == CellState(PlayerColor.BLUE).state or
-            board._state.get(new_coordinate).state == CellState(PlayerColor.RED).state):
-            hop_hop_coordinate = new_coordinate + direction
-            if board._state.get(hop_hop_coordinate).state == CellState("LilyPad").state:
-                new_direction_list = direction_list + [direction]
-                hop(board, starting_coordinate, VALID_MOVES, potential_moves, new_direction_list)
 
 # takes in the board and player colour and outputs a list of all move_actions
-def generate_all_moves(board: Board, player_colour: PlayerColor) -> list[MoveAction] | None:
+def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> list[MoveAction] | None:
     all_moves = []
-    frog_locations = find_frogs(board, player_colour)
-    for frog in frog_locations:
-        all_moves += find_moves(board, frog)
+    
+    match player_colour: 
+        case PlayerColour.RED:
+            frogs = game_state.red_frogs
+        case PlayerColour.BLUE:
+            frogs = game_state.blue_frogs
+
+    for frog in frogs:
+        all_moves += find_moves(game_state, frog)
     return all_moves
-
-# returns a list of the coordinate of all frogs of a given colour
-def find_frogs(board: Board, player_colour: PlayerColor) -> list[Coord]:
-
-    frog_locations = []
-
-    if player_colour == PlayerColor.RED:
-        desired_cell_state = PlayerColor.RED
-    else:
-        desired_cell_state = PlayerColor.BLUE
-    
-    for coordinate, state in board._state.items():
-        try:
-            if state.state == desired_cell_state:
-                frog_locations.append(coordinate)
-        except AttributeError:
-            pass
-    
-    return frog_locations

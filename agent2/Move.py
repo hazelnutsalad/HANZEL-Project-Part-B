@@ -21,7 +21,7 @@ class Hop:
     def __init__(self, start_index: int, direction_offsets: list[DirectionOffset]):
         self.start_index = start_index
         self.direction_offsets = direction_offsets
-        self.end_index = start_index + sum([offset.value for offset in direction_offsets])
+        self.end_index = start_index + sum([2 * offset.value for offset in direction_offsets])
 
     # note we have direction as list
     def convert_to_move_action(self):
