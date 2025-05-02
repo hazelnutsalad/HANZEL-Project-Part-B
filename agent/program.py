@@ -1,5 +1,6 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
+# python -m referee agent agent
 
 from agent.findmove import generate_all_moves, find_frogs
 from referee.game import PlayerColor, Coord, Direction, \

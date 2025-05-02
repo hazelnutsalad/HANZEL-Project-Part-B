@@ -1,15 +1,19 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-from findmove import generate_all_moves
-from Move import *
-from GameState import *
-from referee.game import PlayerColor, Coord, Direction, \
-    Action, MoveAction, GrowAction, Board
 
+"""
+TO-DO:
+    1. Fix update method to reflect new representation of game (No longer using Board Class, but optimised GameState Class
+"""
 
-import random, time
+import random
+import time
 
+from agent2.findmove import generate_all_moves
+from agent2.GameState import *
+from referee.game import Direction, \
+    Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
 
 
@@ -25,14 +29,17 @@ class Agent:
         Any setup and/or precomputation should be done here.
         """
 
-        self.board = Board()
+        ##Now using our own representation of the board instead of the referee's board class
+        self.board = GameState()
 
-        self._color = color
+        ##Convert PlayerColor to our PlayerColour enum
         match color:
             case PlayerColor.RED:
                 print("Testing: I am playing as RED")
+                self.colour = PlayerColour.RED
             case PlayerColor.BLUE:
                 print("Testing: I am playing as BLUE")
+                self.colour = PlayerColour.BLUE
 
 
 
@@ -44,7 +51,7 @@ class Agent:
 
         start = time.time()
 
-        potential_moves = generate_all_moves(self.board, self._color)
+        potential_moves = generate_all_moves(self.board, self.colour)
 
         end = time.time()
         print(f"Move took {end-start} seconds to compute\n")

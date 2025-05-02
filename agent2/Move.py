@@ -1,5 +1,5 @@
 from referee.game import MoveAction
-from GameState import DirectionOffset
+from agent2.GameState import DirectionOffset
 
 class Step:
     """

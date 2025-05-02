@@ -1,7 +1,6 @@
 
-from GameState import GameState, Frog, DirectionOffset, PlayerColour
-from referee.game import MoveAction, Direction
-from Move import *
+from agent2.GameState import GameState, Frog, DirectionOffset, PlayerColour
+from agent2.Move import *
 
 
 VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOffset.DownLeft, DirectionOffset.Left, DirectionOffset.Right]
@@ -64,12 +63,14 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
 # takes in the board and player colour and outputs a list of all move_actions
 def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> list[MoveAction] | None:
     all_moves = []
-    
+
     match player_colour: 
         case PlayerColour.RED:
             frogs = game_state.red_frogs
         case PlayerColour.BLUE:
             frogs = game_state.blue_frogs
+        case _:
+            raise ValueError("Unexpected player colour")
 
     for frog in frogs:
         all_moves += find_moves(game_state, frog)

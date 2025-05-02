@@ -1,6 +1,5 @@
 from enum import Enum
 from referee.game import MoveAction, Direction, BOARD_N
-from Move import *
 
 class DirectionOffset(Enum):
     """
@@ -15,7 +14,7 @@ class DirectionOffset(Enum):
     DownLeft    = 7
     Left        = -1
 
-    # convers to Direction
+    # converts to Direction
     def convert_to_direction(self):
         match self:
             case DirectionOffset.UpLeft:
@@ -98,9 +97,9 @@ class GameState:
             case DirectionOffset.DownRight:
                 return (index % BOARD_N == 7) or (56 <= index < 64)
 
-    # returns the adjacent indicies of in-bounds squares
-    def get_adjacent_indicies(self, index: int):
-        return [index + direction for direction in DirectionOffset 
+    # returns the adjacent indices of in-bounds squares
+    def get_adjacent_indices(self, index: int):
+        return [index + direction.value for direction in DirectionOffset
                 if not self.is_out_of_bounds(index, direction)]
     
     # returns the adjacent in-bounds squares
@@ -108,8 +107,8 @@ class GameState:
         return [self.board[index + direction] for direction in DirectionOffset 
                 if not self.is_out_of_bounds(index, direction)]
     
-    # returns adjacent indicies of in-bound squares restricted to certain directions
-    def get_adjacent_indicies_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
+    # returns adjacent indices of in-bound squares restricted to certain directions
+    def get_adjacent_indices_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
         return [index + direction for direction in restricted_directions
                 if not self.is_out_of_bounds(index, direction)]
     
@@ -121,7 +120,7 @@ class GameState:
 
     # change empty squares around index to lilypads
     def grow_around_frog(self, index: int):
-        for square in self.get_adjacent_indicies(index):
+        for square in self.get_adjacent_indices(index):
             if self.board[square] == '*':
                 self.board[square] = 'L'
     
