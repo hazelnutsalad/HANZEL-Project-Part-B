@@ -21,18 +21,20 @@ def find_moves(game_state: GameState, frog: Frog) -> list[MoveAction] | None:
 
     get_adjacent_moves(game_state, frog.location, VALID_MOVES, potential_moves)
 
+    return potential_moves
+
 
 # appends possible moves one step away from this index given a list of allowable directions
 def get_adjacent_moves(game_state: GameState, index: int, 
                        restricted_directions: list[DirectionOffset], move_list: list[Move]):
     for direction in restricted_directions:
         # lilypad
-        if game_state.board[index + direction] == 'L':
+        if game_state.board[index + direction.value] == 'L':
             move_list.append(Step(index, direction))
 
         # hop
-        if game_state.board[index + direction] == 'B' or game_state.board[index + direction] == 'R':
-            if game_state.board[index + 2 * direction] == 'L':
+        if game_state.board[index + direction.value] == 'B' or game_state.board[index + direction.value] == 'R':
+            if game_state.board[index + direction * 2] == 'L':
                 start_hop(game_state, index, direction, move_list, restricted_directions)
 
 # first time hopping we have as separate func since logic is a bit different
@@ -52,9 +54,9 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
     last_direction = hop_history[-1]
     for direction in restricted_directions:
         if direction + last_direction.value != 0:
-            if (game_state.board[current_index + direction] == 'B' or 
-                    game_state.board[current_index + direction] == 'R'):
-                if game_state.board[current_index + 2 * direction] == 'L':
+            if (game_state.board[current_index + direction.value] == 'B' or 
+                    game_state.board[current_index + direction.value] == 'R'):
+                if game_state.board[current_index + 2 * direction.value] == 'L':
                     hop_history.append(direction)
                     move_list.append(Hop(start_index, hop_history))
                     hop(game_state, start_index, move_list, restricted_directions, hop_history)

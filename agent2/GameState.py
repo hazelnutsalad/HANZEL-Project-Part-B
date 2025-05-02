@@ -1,5 +1,5 @@
 from enum import Enum
-from referee.game import MoveAction, Direction, BOARD_N
+from referee.game import MoveAction, Direction, BOARD_N, Coord
 
 class DirectionOffset(Enum):
     """
@@ -75,6 +75,18 @@ class GameState:
                 string += self.board[i*BOARD_N + j] + ' '
             string += '\n'
         return string
+    
+    # convert index to Coord
+    @staticmethod
+    def indexToCoord(index: int):
+        x = index // BOARD_N
+        y = index % BOARD_N
+        return Coord(x, y)
+
+    # convert Coord to index
+    @staticmethod
+    def coordToIndex(coord: Coord):
+        return coord.r * BOARD_N + coord.c
 
     # check if move if out of bounds
     @staticmethod
@@ -99,7 +111,7 @@ class GameState:
 
     # returns the adjacent indices of in-bounds squares
     def get_adjacent_indices(self, index: int):
-        return [index + direction.value for direction in DirectionOffset
+        return [index + direction for direction in DirectionOffset
                 if not self.is_out_of_bounds(index, direction)]
     
     # returns the adjacent in-bounds squares
@@ -149,12 +161,3 @@ class Frog:
     # updates location of frog (setter for location)
     def move_frog(self, new_index: int):
         self.location = new_index
-
-
-game_state = GameState()
-print(game_state)
-game_state.apply_grow_action(PlayerColour.RED)
-print(game_state)
-print(DirectionOffset.Right.convert_to_direction())
-print(DirectionOffset.Left * 5 + DirectionOffset.Right.value)
-print(DirectionOffset.UpRight + 21)

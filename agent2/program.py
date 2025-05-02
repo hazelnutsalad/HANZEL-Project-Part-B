@@ -30,7 +30,7 @@ class Agent:
         """
 
         ##Now using our own representation of the board instead of the referee's board class
-        self.board = GameState()
+        self.game = GameState()
 
         ##Convert PlayerColor to our PlayerColour enum
         match color:
@@ -51,13 +51,13 @@ class Agent:
 
         start = time.time()
 
-        potential_moves = generate_all_moves(self.board, self.colour)
+        potential_moves = generate_all_moves(self.game, self.colour)
 
         end = time.time()
         print(f"Move took {end-start} seconds to compute\n")
 
         if potential_moves:
-            return random.choice(potential_moves)
+            return random.choice(potential_moves).convert_to_move_action()
         else:
             return GrowAction()
 
@@ -78,36 +78,35 @@ class Agent:
                 print(f"  Coord: {coord}")
                 print(f"  Directions: {dirs_text}")
 
-                # set current coordinate to empty
-                self.board._state[action.coord] = CellState()
-                new_coordinate = action.coord
+                index = GameState.coordToIndex(action.coord)
 
-            
+                # set current coordinate to empty
+                self.game.board[index] = '*'
+                
+                # TODO: could make a function to convert MoveAction to Move so we can find end index easily
+                # currently need to convert each direction to directionOffset??
+                # trace move to find end index
+                new_coordinate = index
                 for direction in action.directions:
-                    new_coordinate += direction
-                    cell_state = self.board._state.get(new_coordinate)
-                    if cell_state.state == CellState("LilyPad").state:
-                        self.board._state[new_coordinate] = CellState()
-                    elif cell_state.state == CellState(PlayerColor.RED).state or cell_state.state == CellState(PlayerColor.BLUE).state:
-                        new_coordinate += direction
-                self.board._state[new_coordinate] = CellState(color)
+                    new_coordinate += direction.value
+
+                match self.colour:
+                    case PlayerColour.RED:
+                        self.game.board[new_coordinate] = 'R'
+                    case PlayerColour.BLUE:
+                        self.game.board[new_coordinate] = 'B'
+                    case _:
+                        Exception("Invalid player colour in update")
+
+
                 # print("What we think board looks like:")
                 # print(self.board.render(True, True))
 
             case GrowAction():
                 print(f"Testing: {color} played GROW action")
-
-                frog_locations = find_frogs(self.board, color)
-
-                for frog in frog_locations:
-                    for direction in Direction:
-                        # try block handles us checking adjacent cells out of bounds
-                        try:
-                            new_coordinate = frog + direction
-                            if self.board._state.get(new_coordinate) == CellState():
-                                self.board._state[new_coordinate] = CellState("LilyPad")
-                        except ValueError:
-                            pass
+                
+                # wow we have a function for this
+                self.game.apply_grow_action(self.colour)
 
             case _:
                 raise ValueError(f"Unknown action type: {action}")
