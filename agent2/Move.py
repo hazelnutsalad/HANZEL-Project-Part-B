@@ -28,7 +28,7 @@ class Hop:
     # note we have direction as list
     def convert_to_move_action(self):
         return MoveAction(GameState.indexToCoord(self.start_index), 
-                        [offset.convert_to_direction for offset in self.direction_offsets])
+                        [offset.convert_to_direction() for offset in self.direction_offsets])
 
 # so we can have array of Move in our generate moves function
 Move = Step | Hop

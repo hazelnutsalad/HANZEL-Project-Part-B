@@ -28,14 +28,13 @@ def find_moves(game_state: GameState, frog: Frog) -> list[MoveAction] | None:
 def get_adjacent_moves(game_state: GameState, index: int, 
                        restricted_directions: list[DirectionOffset], move_list: list[Move]):
     
-    # rename this just quickly adding before i forget
-    adjacent_dict = game_state.get_adjacent_squares_restricted(index, restricted_directions)
+    adjacent_squares = game_state.get_adjacent_squares_restricted(index, restricted_directions)
 
     # if no moves can be made from this index exit function here
-    if not adjacent_dict:
+    if not adjacent_squares:
         return
 
-    for direction, square in adjacent_dict.items():
+    for direction, square in adjacent_squares.items():
         # lilypad
         if square == 'L':
             move_list.append(Step(index, direction))
@@ -43,7 +42,7 @@ def get_adjacent_moves(game_state: GameState, index: int,
         # hop
         if square == 'B' or square == 'R':
             # check if next square is also in-bound
-            if not game_state.is_out_of_bounds(index, direction):
+            if not game_state.is_out_of_bounds(index + direction.value, direction):
                 if game_state.board[index + direction * 2] == 'L':
                     start_hop(game_state, index, direction, move_list, restricted_directions)
 
@@ -69,8 +68,8 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
         # check we haven't gone backwards (left -> right or right -> left)
         if direction + last_direction.value != 0:
             # now we check if the adjacent square is a frog
-            if (game_state.board[current_index + direction.value] == 'B' or 
-                    game_state.board[current_index + direction.value] == 'R'):
+            square = game_state.board[current_index + direction.value]
+            if (square == 'B' or square == 'R'):
                 # now we check that the square past the frog is a lilypad
                 if game_state.board[current_index + 2 * direction.value] == 'L':
                     # we have a valid hop so can add it to move_list and try to hop from new square

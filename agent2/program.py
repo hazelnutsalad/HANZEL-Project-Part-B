@@ -57,6 +57,9 @@ class Agent:
         print(f"Move took {end-start} seconds to compute\n")
 
         if potential_moves:
+            if len(potential_moves) == 1:
+                print("one move left")
+                print(potential_moves)
             return random.choice(potential_moves).convert_to_move_action()
         else:
             return GrowAction()
@@ -71,6 +74,14 @@ class Agent:
         # which type of action was played and print out the details of the
         # action for demonstration purposes. You should replace this with your
         # own logic to update your agent's internal game state representation.
+
+        # convert their color to our colour
+        match color:
+            case PlayerColor.RED:
+                colour = PlayerColour.RED
+            case PlayerColor.BLUE:
+                colour = PlayerColour.BLUE
+
         match action:
             case MoveAction(coord, dirs):
                 dirs_text = ", ".join([str(dir) for dir in dirs])
@@ -78,32 +89,25 @@ class Agent:
                 print(f"  Coord: {coord}")
                 print(f"  Directions: {dirs_text}")
 
-                index = GameState.coordToIndex(action.coord)
-
-                # set current coordinate to empty
-                self.game.board[index] = '*'
                 
-                new_coordinate = index
-                for direction in action.directions:
-                    new_coordinate += DirectionOffset.convert_direction_to_offset(direction).value
 
-                match self.colour:
-                    case PlayerColour.RED:
-                        self.game.board[new_coordinate] = 'R'
-                    case PlayerColour.BLUE:
-                        self.game.board[new_coordinate] = 'B'
-                    case _:
-                        Exception("Invalid player colour in update")
+                self.game.apply_move_action(colour, action)
 
-
-                # print("What we think board looks like:")
-                # print(self.board.render(True, True))
+                # print("what we think the board looks like")
+                # print(self.game)
+                # print([frog.location for frog in self.game.red_frogs])
+                # print([frog.location for frog in self.game.blue_frogs])
 
             case GrowAction():
                 print(f"Testing: {color} played GROW action")
                 
                 # wow we have a function for this
-                self.game.apply_grow_action(self.colour)
+                self.game.apply_grow_action(colour)
+
+                # print("what we think the board looks like")
+                # print(self.game)
+                # print([frog.location for frog in self.game.red_frogs])
+                # print([frog.location for frog in self.game.blue_frogs])
 
             case _:
                 raise ValueError(f"Unknown action type: {action}")

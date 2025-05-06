@@ -95,7 +95,7 @@ class GameState:
                 string += self.board[i*BOARD_N + j] + ' '
             string += '\n'
         return string
-    
+        
     # convert index to Coord
     @staticmethod
     def indexToCoord(index: int):
@@ -192,9 +192,6 @@ class GameState:
                 output_dict[direction] = self.board[index + direction.value]
         return output_dict
 
-
-    
-
     # change empty squares around index to lilypads
     def grow_around_frog(self, index: int):
         for square in self.get_adjacent_indices(index):
@@ -210,7 +207,40 @@ class GameState:
             case PlayerColour.BLUE:
                 for frog in self.blue_frogs:
                     self.grow_around_frog(frog.location)
+    
+    def apply_move_action(self, colour: PlayerColour, move: MoveAction):
+        # converting MoveAction to our representation
+        start_index = GameState.coordToIndex(move.coord)
+        
+        # first we need to determine if this is a step or hop (step is first case, hop is else)
+        if len(move.directions) == 1:   # could be step or hop at this stage
+            dir = DirectionOffset.convert_direction_to_offset(move.directions[0]).value
+            if self.board[start_index + dir] == 'L':
+                # it is a step!
+                end_index = start_index + dir
+            else:   # it is a hop of length one
+                end_index = start_index + dir * 2
+        # else it is a hop of multiple jumps
+        else:
+            end_index = start_index + sum([DirectionOffset.convert_direction_to_offset(dir).value * 2 for dir in move.directions])
 
+        # set current coordinate to empty
+        self.board[start_index] = '*'
+
+        # move frog to new location and update board accordingly
+        match colour:
+            case PlayerColour.RED:
+                for frog in self.red_frogs:
+                    if frog.location == start_index:
+                        frog.apply_move(end_index)
+                        self.board[end_index] = 'R'
+            case PlayerColour.BLUE:
+                for frog in self.blue_frogs:
+                    if frog.location == start_index:
+                        frog.apply_move(end_index)
+                        self.board[end_index] = 'B'
+               
+        
 
 class Frog:
     """ 
@@ -223,6 +253,6 @@ class Frog:
         self.location = location
         self.colour = colour
     
-    # updates location of frog (setter for location)
-    def move_frog(self, new_index: int):
-        self.location = new_index
+    # applies move to frog by setting location to end_index
+    def apply_move(self, end_index: int):
+        self.location = end_index
