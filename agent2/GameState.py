@@ -34,6 +34,26 @@ class DirectionOffset(Enum):
             case DirectionOffset.Left:
                 return Direction.Left
             
+    @staticmethod
+    def convert_direction_to_offset(direction: Direction):
+        match direction:
+            case Direction.Down:
+                return DirectionOffset.Down
+            case Direction.DownRight:
+                return DirectionOffset.DownRight
+            case Direction.DownLeft:
+                return DirectionOffset.DownLeft
+            case Direction.Up:
+                return DirectionOffset.Up
+            case Direction.UpRight:
+                return DirectionOffset.UpRight
+            case Direction.UpLeft:
+                return DirectionOffset.UpLeft
+            case Direction.Right:
+                return DirectionOffset.Right
+            case Direction.Left:
+                return DirectionOffset.Left
+            
     def __add__(self, other: int) -> int:
         return self.value + other
     
@@ -89,6 +109,9 @@ class GameState:
         return coord.r * BOARD_N + coord.c
 
     # check if move if out of bounds
+    # TODO: replace numbers to be in terms of BOARD_N
+    # TODO: also might want to change this to return the opposite of what it does currently so we
+    # don't have lots of nots floating around everywhere else (i.e. change to is_in_bounds(..))
     @staticmethod
     def is_out_of_bounds(index: int, direction: DirectionOffset):
         match direction:
@@ -109,25 +132,67 @@ class GameState:
             case DirectionOffset.DownRight:
                 return (index % BOARD_N == 7) or (56 <= index < 64)
 
+    # culls a list of DirectionOffsets to only include the ones that can form a hop (i.e 2+ away from edge)   
+    # TODO: replace numbers to be in terms of BOARD_N  
+    @staticmethod
+    def in_bound_for_hop(index: int, directions: list[DirectionOffset]):
+        in_bound_directions = []
+        for direction in directions:
+            match direction:
+                case DirectionOffset.Up:
+                    if not (0 <= index < 16):
+                        in_bound_directions.append(direction)
+                case DirectionOffset.Down:
+                    if not (48 <= index < 64):
+                        in_bound_directions.append(direction)
+                case DirectionOffset.Left:
+                    if not (index % BOARD_N < 2):
+                         in_bound_directions.append(direction)
+                case DirectionOffset.Right:
+                    if not (index % BOARD_N > BOARD_N - 2):
+                        in_bound_directions.append(direction)
+                
+                # these are just compositions of above 4 (e.g. UpLeft is Up case and Left case)
+                case DirectionOffset.UpLeft:
+                    if not ((0 <= index < 16) and (index % BOARD_N < 2)): 
+                        in_bound_directions.append(direction)
+                case DirectionOffset.UpRight:
+                    if not ((0 <= index < 16) and (index % BOARD_N > BOARD_N - 2)):
+                        in_bound_directions.append(direction)
+                case DirectionOffset.DownLeft:
+                    if not ((48 <= index < 64) and (index % BOARD_N < 2)):
+                        in_bound_directions.append(direction)
+                case DirectionOffset.DownRight:
+                    if not ((48 <= index < 64) and (index % BOARD_N > BOARD_N - 2)):
+                        in_bound_directions.append(direction)
+
+        return in_bound_directions
+
     # returns the adjacent indices of in-bounds squares
     def get_adjacent_indices(self, index: int):
-        return [index + direction for direction in DirectionOffset
+        return [index + direction.value for direction in DirectionOffset
                 if not self.is_out_of_bounds(index, direction)]
     
     # returns the adjacent in-bounds squares
     def get_adjacent_squares(self, index: int):
-        return [self.board[index + direction] for direction in DirectionOffset 
+        return [self.board[index + direction.value] for direction in DirectionOffset 
                 if not self.is_out_of_bounds(index, direction)]
     
     # returns adjacent indices of in-bound squares restricted to certain directions
     def get_adjacent_indices_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
-        return [index + direction for direction in restricted_directions
+        return [index + direction.value for direction in restricted_directions
                 if not self.is_out_of_bounds(index, direction)]
     
+    # NOTE: changed this to return a dictionary of direction/state pairs for findmoves function
     # returns adjacent in-bounds squares restricted to certain directions
     def get_adjacent_squares_restricted(self, index: int, restricted_directions: list[DirectionOffset]):
-        return [self.board[index + direction] for direction in restricted_directions
-                if not self.is_out_of_bounds(index, direction)]
+        output_dict = {}
+        for direction in restricted_directions:
+            if not self.is_out_of_bounds(index, direction):
+                output_dict[direction] = self.board[index + direction.value]
+        return output_dict
+
+
     
 
     # change empty squares around index to lilypads

@@ -83,12 +83,9 @@ class Agent:
                 # set current coordinate to empty
                 self.game.board[index] = '*'
                 
-                # TODO: could make a function to convert MoveAction to Move so we can find end index easily
-                # currently need to convert each direction to directionOffset??
-                # trace move to find end index
                 new_coordinate = index
                 for direction in action.directions:
-                    new_coordinate += direction.value
+                    new_coordinate += DirectionOffset.convert_direction_to_offset(direction).value
 
                 match self.colour:
                     case PlayerColour.RED:
