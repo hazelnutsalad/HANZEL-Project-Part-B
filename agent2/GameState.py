@@ -154,16 +154,16 @@ class GameState:
                 
                 # these are just compositions of above 4 (e.g. UpLeft is Up case and Left case)
                 case DirectionOffset.UpLeft:
-                    if not ((0 <= index < 16) and (index % BOARD_N < 2)): 
+                    if not ((0 <= index < 16) or (index % BOARD_N < 2)): 
                         in_bound_directions.append(direction)
                 case DirectionOffset.UpRight:
-                    if not ((0 <= index < 16) and (index % BOARD_N > BOARD_N - 2)):
+                    if not ((0 <= index < 16) or (index % BOARD_N > BOARD_N - 2)):
                         in_bound_directions.append(direction)
                 case DirectionOffset.DownLeft:
-                    if not ((48 <= index < 64) and (index % BOARD_N < 2)):
+                    if not ((48 <= index < 64) or (index % BOARD_N < 2)):
                         in_bound_directions.append(direction)
                 case DirectionOffset.DownRight:
-                    if not ((48 <= index < 64) and (index % BOARD_N > BOARD_N - 2)):
+                    if not ((48 <= index < 64) or (index % BOARD_N > BOARD_N - 2)):
                         in_bound_directions.append(direction)
 
         return in_bound_directions

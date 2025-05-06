@@ -7,23 +7,6 @@ VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOff
 VALID_MOVES_BLUE = [DirectionOffset.UpRight, DirectionOffset.Up, DirectionOffset.UpLeft, DirectionOffset.Left, DirectionOffset.Right]
 
 
-# function which takes in a board state and a frog and finds all the moves for that frog
-def find_moves(game_state: GameState, frog: Frog) -> list[MoveAction] | None:
-    colour = frog.colour
-
-    match colour:
-        case PlayerColour.RED:
-            VALID_MOVES = VALID_MOVES_RED
-        case PlayerColour.BLUE:
-            VALID_MOVES = VALID_MOVES_BLUE
-
-    potential_moves = []
-
-    get_adjacent_moves(game_state, frog.location, VALID_MOVES, potential_moves)
-
-    return potential_moves
-
-
 # appends possible moves one step away from this index given a list of allowable directions
 def get_adjacent_moves(game_state: GameState, index: int, 
                        restricted_directions: list[DirectionOffset], move_list: list[Move]):
@@ -64,6 +47,8 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
 
     # trims down our restricted_directions to only include those at least 2 squares away from edge
     potential_hops = game_state.in_bound_for_hop(current_index, restricted_directions)
+    print(f"start index: {start_index}, current index: {current_index}, last dir: {last_direction}")
+    print(potential_hops)
     for direction in potential_hops:
         # check we haven't gone backwards (left -> right or right -> left)
         if direction + last_direction.value != 0:
@@ -84,11 +69,14 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
     match player_colour: 
         case PlayerColour.RED:
             frogs = game_state.red_frogs
+            VALID_MOVES = VALID_MOVES_RED
         case PlayerColour.BLUE:
             frogs = game_state.blue_frogs
+            VALID_MOVES = VALID_MOVES_BLUE
         case _:
             raise ValueError("Unexpected player colour")
 
     for frog in frogs:
-        all_moves += find_moves(game_state, frog)
+        get_adjacent_moves(game_state, frog.location, VALID_MOVES, all_moves)
+
     return all_moves
