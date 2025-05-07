@@ -10,8 +10,8 @@ TO-DO:
 import random
 import time
 
-from agent2.findmove import generate_all_moves
-from agent2.GameState import *
+from agent3.findmove import generate_all_moves
+from agent3.GameState import *
 from referee.game import Direction, \
     Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
