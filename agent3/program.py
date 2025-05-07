@@ -5,7 +5,7 @@ import random
 import time
 import heapq
 
-from agent3.findmove import generate_all_moves
+from agent3.findmove import generate_all_moves, minimax_decision
 from agent3.GameState import *
 from agent3.Move import *
 from referee.game import Direction, \
@@ -54,11 +54,12 @@ class Agent:
         # don't even really need heapq maybe ?? just loop over array once to find best move
 
         # slightly cursed way to convert to priority queue for now (-ve bc heapq is minheap)
-        heapq.heapify(potential_moves)
-        heapq.heappush(potential_moves, Grow(self.colour, self.game))
+        # heapq.heapify(potential_moves)
+        # heapq.heappush(potential_moves, Grow(self.colour, self.game))
 
-        return heapq.heappop(potential_moves).to_action()
-        
+        # return heapq.heappop(potential_moves).to_action()
+        return minimax_decision(self.game, self.colour, 3).to_action()
+
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
         This method is called by the referee after a player has taken their

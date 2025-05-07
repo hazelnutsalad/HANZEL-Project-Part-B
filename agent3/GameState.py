@@ -1,64 +1,8 @@
 from enum import Enum
-from referee.game import MoveAction, Direction, BOARD_N, Coord
 
-class DirectionOffset(Enum):
-    """
-    Enum which contains the offsets for each possible direction
-    """
-    UpLeft      = -9
-    Up          = -8
-    UpRight     = -7
-    Right       = 1
-    DownRight   = 9
-    Down        = 8
-    DownLeft    = 7
-    Left        = -1
+from agent3.direction import DirectionOffset
+from referee.game import BOARD_N, Coord, MoveAction
 
-    # converts to Direction
-    def convert_to_direction(self):
-        match self:
-            case DirectionOffset.UpLeft:
-                return Direction.UpLeft
-            case DirectionOffset.Up:
-                return Direction.Up
-            case DirectionOffset.UpRight:
-                return Direction.UpRight
-            case DirectionOffset.Right:
-                return Direction.Right
-            case DirectionOffset.DownRight:
-                return Direction.DownRight
-            case DirectionOffset.Down:
-                return Direction.Down
-            case DirectionOffset.DownLeft:
-                return Direction.DownLeft
-            case DirectionOffset.Left:
-                return Direction.Left
-            
-    @staticmethod
-    def convert_direction_to_offset(direction: Direction):
-        match direction:
-            case Direction.Down:
-                return DirectionOffset.Down
-            case Direction.DownRight:
-                return DirectionOffset.DownRight
-            case Direction.DownLeft:
-                return DirectionOffset.DownLeft
-            case Direction.Up:
-                return DirectionOffset.Up
-            case Direction.UpRight:
-                return DirectionOffset.UpRight
-            case Direction.UpLeft:
-                return DirectionOffset.UpLeft
-            case Direction.Right:
-                return DirectionOffset.Right
-            case Direction.Left:
-                return DirectionOffset.Left
-            
-    def __add__(self, other: int) -> int:
-        return self.value + other
-    
-    def __mul__(self, n: int) -> int:
-        return n * self.value
 
 class PlayerColour(Enum):
     RED = 0
@@ -197,7 +141,7 @@ class GameState:
         for square in self.get_adjacent_indices(index):
             if self.board[square] == '*':
                 self.board[square] = 'L'
-    
+
     # loops over all frogs of given colour to perform a grow action for that colour
     def apply_grow_action(self, colour: PlayerColour):
         match colour:
@@ -207,22 +151,30 @@ class GameState:
             case PlayerColour.BLUE:
                 for frog in self.blue_frogs:
                     self.grow_around_frog(frog.location)
-    
+
+    def apply_action(self, colour: PlayerColour, action: MoveAction):
+        if isinstance(action, MoveAction):
+            self.apply_move_action(colour, action)
+        else:
+            self.apply_grow_action(colour)
+
+
     def apply_move_action(self, colour: PlayerColour, move: MoveAction):
         # converting MoveAction to our representation
         start_index = GameState.coordToIndex(move.coord)
-        
+
         # first we need to determine if this is a step or hop (step is first case, hop is else)
-        if len(move.directions) == 1:   # could be step or hop at this stage
+        if len(move.directions) == 1:  # could be step or hop at this stage
             dir = DirectionOffset.convert_direction_to_offset(move.directions[0]).value
             if self.board[start_index + dir] == 'L':
                 # it is a step!
                 end_index = start_index + dir
-            else:   # it is a hop of length one
+            else:  # it is a hop of length one
                 end_index = start_index + dir * 2
         # else it is a hop of multiple jumps
         else:
-            end_index = start_index + sum([DirectionOffset.convert_direction_to_offset(dir).value * 2 for dir in move.directions])
+            end_index = start_index + sum(
+                [DirectionOffset.convert_direction_to_offset(dir).value * 2 for dir in move.directions])
 
         # set current coordinate to empty
         self.board[start_index] = '*'
@@ -240,17 +192,31 @@ class GameState:
                         frog.apply_move(end_index)
                         self.board[end_index] = 'B'
 
-    def calculate_utility(self, start_index: int):
-        blue_score = 0
-        red_score = 0
-        for i in self.red_frogs:
-            red_score += i.location % BOARD_N
-        for i in self.blue_frogs:
-            blue_score += 8 - (i.location % BOARD_N)
-        if self.board[start_index] == 'R':
-           return red_score - blue_score
+    def calculate_utility(self):
+        # #Red is MAX, Blue is MIN
+        # blue_score = 0
+        # red_score = 0
+        # for i in self.red_frogs:
+        #     red_score += i.location % BOARD_N
+        # for i in self.blue_frogs:
+        #     blue_score += 8 - (i.location % BOARD_N)
+        # return red_score - blue_score
+        return 0
+
+    def goal_test(self, player_colour: PlayerColour):
+        goal_test = True
+        if player_colour == PlayerColour.RED:
+            for i in self.red_frogs:
+                if i.location // BOARD_N != 0:
+                    goal_test = False
         else:
-            return blue_score - red_score
+                for i in self.blue_frogs:
+                    if i.location // BOARD_N != BOARD_N -1:
+                        goal_test = False
+        return goal_test
+
+
+
 
 class Frog:
     """ 

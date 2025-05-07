@@ -1,7 +1,8 @@
-from referee.game import MoveAction, GrowAction, BOARD_N
-from agent3.GameState import DirectionOffset, GameState, PlayerColour
 from abc import ABC, abstractmethod
 
+from referee.game import MoveAction, GrowAction, BOARD_N
+from agent3.GameState import GameState, PlayerColour
+from agent3.direction import DirectionOffset
 
 
 # abstract base class for our moves, contains evaluation attribute
@@ -26,27 +27,31 @@ class Grow(Action):
             start_index = board.red_frogs[0].location
         else:
             start_index = board.blue_frogs[0].location
-        self.evaluation = board.calculate_utility(start_index)
+        self.evaluation = board.calculate_utility()
 
     def to_action(self):
         return GrowAction()
     
 class Move(Action):
     """
-    Cannot instantiate and does nothing for now
+    Abstract base class for move actions with shared attributes
     """
-    pass
+    def __init__(self, start_index: int, end_index: int, evaluation: int):
+            self.start_index = start_index
+            self.end_index = end_index
+            self.evaluation = evaluation
 
 class Step(Move):
     """
     Represents a single step onto a lilypad
     """
     def __init__(self, start_index: int, direction_offset: DirectionOffset, board: GameState):
-        #self.evaluation = 1 + (start_index // 8)    # this only works for red
-        self.evaluation = board.calculate_utility(start_index)
-        self.start_index = start_index
+        end_index = start_index + direction_offset.value
+
+    # self.evaluation = 1 + (start_index // 8)    # this only works for red
+        evaluation = board.calculate_utility()
+        super().__init__(start_index, end_index, evaluation)
         self.direction_offset = direction_offset
-        self.end_index = start_index + direction_offset.value
 
     # note we have direction NOT as a list
     def to_action(self):
@@ -58,11 +63,11 @@ class Hop(Move):
     Represents (potentially multiple) hop
     """    
     def __init__(self, start_index: int, direction_offsets: list[DirectionOffset], board: GameState):
+        end_index = start_index + sum([2 * offset.value for offset in direction_offsets])
         #self.evaluation = 5 * (len(direction_offsets) + start_index // 8)   # this only works for red maybe
-        self.evaluation = board.calculate_utility(start_index)
-        self.start_index = start_index
+        evaluation = board.calculate_utility()
+        super().__init__(start_index, end_index, evaluation)
         self.direction_offsets = direction_offsets
-        self.end_index = start_index + sum([2 * offset.value for offset in direction_offsets])
 
 
     # note we have direction as list

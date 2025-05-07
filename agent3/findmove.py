@@ -1,7 +1,8 @@
 
-from agent3.GameState import GameState, Frog, DirectionOffset, PlayerColour
-from agent3.Move import *
-
+from agent3.GameState import GameState, Frog, PlayerColour
+from agent3.Move import Step, Move, Hop, Action, Grow
+from agent3.direction import DirectionOffset
+import copy
 
 VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOffset.DownLeft, DirectionOffset.Left, DirectionOffset.Right]
 VALID_MOVES_BLUE = [DirectionOffset.UpRight, DirectionOffset.Up, DirectionOffset.UpLeft, DirectionOffset.Left, DirectionOffset.Right]
@@ -80,12 +81,57 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
     all_moves.append(Grow(player_colour, game_state))
     return all_moves
 
-##Mini Max
+#Mini Max
 def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_depth: int) -> Action:
-    potential_actions = generate_all_moves(game_state, player_colour)
-    for action in potential_actions:
-        modified_game_state = game_state.apply_action(player_colour, action)
-        action.evaluation = minimax_value()
-    pass
 
-def minimax_value(game_state: GameState, player_colour: PlayerColour):
+    ##Initialising values
+    best_action = None
+    best_value = float('-inf') if player_colour == PlayerColour.RED else float('inf')
+
+
+    potential_actions = generate_all_moves(game_state, player_colour)
+
+    for action in potential_actions:
+        #Making a deep copy so that changed board does not influence original board
+        modified_game_state = copy.deepcopy(game_state)
+        modified_game_state.apply_action(player_colour, action.to_action())
+
+        action_value = minimax_value(modified_game_state, player_colour, search_depth - 1)
+
+        ##Update based on result
+        if player_colour == PlayerColour.RED and action_value > best_value:
+            best_value = action_value
+            best_action = action
+        elif player_colour == PlayerColour.BLUE and action_value < best_value:
+            best_value = action_value
+            best_action = action
+
+    return best_action
+
+
+def minimax_value(game_state: GameState, player_colour: PlayerColour, search_depth) -> int:
+    best_action = None
+    ##Check whether terminal or maximum depth has been reached
+    if game_state.goal_test(player_colour) or search_depth == 0:
+            return game_state.calculate_utility()
+
+    #If Playing MAX
+    if player_colour == PlayerColour.RED:
+        max_value = float('-inf')
+        for action in generate_all_moves(game_state, player_colour):
+            modified_game_state = copy.deepcopy(game_state)
+            modified_game_state.apply_action(player_colour, action.to_action())
+            max_value = max(max_value, minimax_value(modified_game_state, PlayerColour.BLUE, search_depth - 1))
+        return max_value
+    #Else playing MIN
+    else:
+        min_value = float('inf')
+        for action in generate_all_moves(game_state, player_colour):
+            modified_game_state = copy.deepcopy(game_state)
+            modified_game_state.apply_action(player_colour, action.to_action())
+            min_value = min(min_value, minimax_value(modified_game_state, PlayerColour.RED, search_depth -1))
+        return min_value
+
+
+
+
