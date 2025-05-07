@@ -92,9 +92,11 @@ class Agent:
                 self.game.apply_move_action(colour, action)
 
                 # print("what we think the board looks like")
-                # print(self.game)
-                # print([frog.location for frog in self.game.red_frogs])
-                # print([frog.location for frog in self.game.blue_frogs])
+                print(self.game)
+                print("red frogs")
+                print([frog.location for frog in self.game.red_frogs])
+                print("blue frogs")
+                print([frog.location for frog in self.game.blue_frogs])
 
             case GrowAction():
                 print(f"Testing: {color} played GROW action")

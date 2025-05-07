@@ -140,30 +140,30 @@ class GameState:
         for direction in directions:
             match direction:
                 case DirectionOffset.Up:
-                    if not (0 <= index < 16):
+                    if (index >= 16):
                         in_bound_directions.append(direction)
                 case DirectionOffset.Down:
-                    if not (48 <= index < 64):
+                    if (index < 48):
                         in_bound_directions.append(direction)
                 case DirectionOffset.Left:
-                    if not (index % BOARD_N < 2):
+                    if (index % BOARD_N >= 2):
                          in_bound_directions.append(direction)
                 case DirectionOffset.Right:
-                    if not (index % BOARD_N > BOARD_N - 3): # gets 7 and 8?? is this right??
+                    if (index % BOARD_N < BOARD_N - 2): # gets 7 and 8?? is this right??
                         in_bound_directions.append(direction)
                 
                 # these are just compositions of above 4 (e.g. UpLeft is Up case and Left case)
                 case DirectionOffset.UpLeft:
-                    if not ((0 <= index < 16) or (index % BOARD_N < 2)): 
+                    if ((index >= 16) and (index % BOARD_N >= 2)): 
                         in_bound_directions.append(direction)
                 case DirectionOffset.UpRight:
-                    if not ((0 <= index < 16) or (index % BOARD_N > BOARD_N - 3)):
+                    if ((index >= 16) and (index % BOARD_N < BOARD_N - 2)):
                         in_bound_directions.append(direction)
                 case DirectionOffset.DownLeft:
-                    if not ((48 <= index < 64) or (index % BOARD_N < 2)):
+                    if ((index < 48) and (index % BOARD_N >= 2)):
                         in_bound_directions.append(direction)
                 case DirectionOffset.DownRight:
-                    if not ((48 <= index < 64) or (index % BOARD_N > BOARD_N - 3)):
+                    if ((index < 48) and (index % BOARD_N < BOARD_N - 2)):
                         in_bound_directions.append(direction)
 
         return in_bound_directions

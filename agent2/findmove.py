@@ -42,7 +42,7 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
         restricted_directions: list[DirectionOffset], hop_history: list[DirectionOffset]):
     # NOTE: this breaks if we change how we add things to move_list so be careful!!
     # but saves us from having to recompute this (could also just add it to signature ??)
-    current_index = start_index + sum([2 * direction.value for direction in hop_history])
+    current_index = move_list[-1].end_index
     last_direction = hop_history[-1]
 
     # trims down our restricted_directions to only include those at least 2 squares away from edge
@@ -56,9 +56,9 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
                 # now we check that the square past the frog is a lilypad
                 if game_state.board[current_index + 2 * direction.value] == 'L':
                     # we have a valid hop so can add it to move_list and try to hop from new square
-                    hop_history.append(direction)
-                    move_list.append(Hop(start_index, hop_history))
-                    hop(game_state, start_index, move_list, restricted_directions, hop_history)
+                    hop2_history = hop_history + [direction]    # new list for recursion
+                    move_list.append(Hop(start_index, hop2_history))
+                    hop(game_state, start_index, move_list, restricted_directions, hop2_history)
 
 # takes in the board and player colour and outputs a list of all move_actions
 def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> list[MoveAction] | None:
