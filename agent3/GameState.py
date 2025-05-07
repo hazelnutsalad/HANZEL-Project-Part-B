@@ -239,8 +239,18 @@ class GameState:
                     if frog.location == start_index:
                         frog.apply_move(end_index)
                         self.board[end_index] = 'B'
-               
-        
+
+    def calculate_utility(self, start_index: int):
+        blue_score = 0
+        red_score = 0
+        for i in self.red_frogs:
+            red_score += i.location % BOARD_N
+        for i in self.blue_frogs:
+            blue_score += 8 - (i.location % BOARD_N)
+        if self.board[start_index] == 'R':
+           return red_score - blue_score
+        else:
+            return blue_score - red_score
 
 class Frog:
     """ 

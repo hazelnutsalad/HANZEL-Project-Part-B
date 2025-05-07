@@ -9,7 +9,7 @@ VALID_MOVES_BLUE = [DirectionOffset.UpRight, DirectionOffset.Up, DirectionOffset
 
 # appends possible moves one step away from this index given a list of allowable directions
 def get_adjacent_moves(game_state: GameState, index: int, 
-                       restricted_directions: list[DirectionOffset], move_list: list[Move]):
+                       restricted_directions: list[DirectionOffset], move_list: list[Action]):
     
     adjacent_squares = game_state.get_adjacent_squares_restricted(index, restricted_directions)
 
@@ -20,7 +20,7 @@ def get_adjacent_moves(game_state: GameState, index: int,
     for direction, square in adjacent_squares.items():
         # lilypad
         if square == 'L':
-            move_list.append(Step(index, direction))
+            move_list.append(Step(index, direction, game_state))
 
         # hop
         if square == 'B' or square == 'R':
@@ -34,7 +34,7 @@ def start_hop(game_state: GameState, start_index: int, start_direction: Directio
               move_list: list[Move], restricted_directions: list[DirectionOffset]):
     # note we check that we land on lilypad before calling this so we know it is valid hop
     hop_history = [start_direction]
-    move_list.append(Hop(start_index, hop_history))
+    move_list.append(Hop(start_index, hop_history, game_state))
     hop(game_state, start_index, move_list, restricted_directions, hop_history)
 
 # now we need to look for multiple directions when hopping, and have to keep track of dirs we hop
@@ -57,11 +57,11 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
                 if game_state.board[current_index + 2 * direction.value] == 'L':
                     # we have a valid hop so can add it to move_list and try to hop from new square
                     hop2_history = hop_history + [direction]    # new list for recursion
-                    move_list.append(Hop(start_index, hop2_history))
+                    move_list.append(Hop(start_index, hop2_history, game_state))
                     hop(game_state, start_index, move_list, restricted_directions, hop2_history)
 
 # takes in the board and player colour and outputs a list of all move_actions
-def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> list[MoveAction] | None:
+def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> list[Action] | None:
     all_moves = []
 
     match player_colour: 
@@ -77,4 +77,15 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
     for frog in frogs:
         get_adjacent_moves(game_state, frog.location, VALID_MOVES, all_moves)
 
+    all_moves.append(Grow(player_colour, game_state))
     return all_moves
+
+##Mini Max
+def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_depth: int) -> Action:
+    potential_actions = generate_all_moves(game_state, player_colour)
+    for action in potential_actions:
+        modified_game_state = game_state.apply_action(player_colour, action)
+        action.evaluation = minimax_value()
+    pass
+
+def minimax_value(game_state: GameState, player_colour: PlayerColour):

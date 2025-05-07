@@ -38,7 +38,6 @@ class Agent:
                 self.colour = PlayerColour.BLUE
 
 
-
     def action(self, **referee: dict) -> Action:
         """
         This method is called by the referee each time it is the agent's turn
@@ -56,7 +55,7 @@ class Agent:
 
         # slightly cursed way to convert to priority queue for now (-ve bc heapq is minheap)
         heapq.heapify(potential_moves)
-        heapq.heappush(potential_moves, Grow())
+        heapq.heappush(potential_moves, Grow(self.colour, self.game))
 
         return heapq.heappop(potential_moves).to_action()
         
