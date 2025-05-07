@@ -149,7 +149,7 @@ class GameState:
                     if not (index % BOARD_N < 2):
                          in_bound_directions.append(direction)
                 case DirectionOffset.Right:
-                    if not (index % BOARD_N > BOARD_N - 2):
+                    if not (index % BOARD_N > BOARD_N - 3): # gets 7 and 8?? is this right??
                         in_bound_directions.append(direction)
                 
                 # these are just compositions of above 4 (e.g. UpLeft is Up case and Left case)
@@ -157,13 +157,13 @@ class GameState:
                     if not ((0 <= index < 16) or (index % BOARD_N < 2)): 
                         in_bound_directions.append(direction)
                 case DirectionOffset.UpRight:
-                    if not ((0 <= index < 16) or (index % BOARD_N > BOARD_N - 2)):
+                    if not ((0 <= index < 16) or (index % BOARD_N > BOARD_N - 3)):
                         in_bound_directions.append(direction)
                 case DirectionOffset.DownLeft:
                     if not ((48 <= index < 64) or (index % BOARD_N < 2)):
                         in_bound_directions.append(direction)
                 case DirectionOffset.DownRight:
-                    if not ((48 <= index < 64) or (index % BOARD_N > BOARD_N - 2)):
+                    if not ((48 <= index < 64) or (index % BOARD_N > BOARD_N - 3)):
                         in_bound_directions.append(direction)
 
         return in_bound_directions

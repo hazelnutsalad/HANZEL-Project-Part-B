@@ -84,12 +84,10 @@ class Agent:
 
         match action:
             case MoveAction(coord, dirs):
-                dirs_text = ", ".join([str(dir) for dir in dirs])
-                print(f"Testing: {color} played MOVE action:")
-                print(f"  Coord: {coord}")
-                print(f"  Directions: {dirs_text}")
-
-                
+                # dirs_text = ", ".join([str(dir) for dir in dirs])
+                # print(f"Testing: {color} played MOVE action:")
+                # print(f"  Coord: {coord}")
+                # print(f"  Directions: {dirs_text}")
 
                 self.game.apply_move_action(colour, action)
 

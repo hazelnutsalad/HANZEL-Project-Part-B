@@ -42,13 +42,11 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
         restricted_directions: list[DirectionOffset], hop_history: list[DirectionOffset]):
     # NOTE: this breaks if we change how we add things to move_list so be careful!!
     # but saves us from having to recompute this (could also just add it to signature ??)
-    current_index = move_list[-1].end_index
+    current_index = start_index + sum([2 * direction.value for direction in hop_history])
     last_direction = hop_history[-1]
 
     # trims down our restricted_directions to only include those at least 2 squares away from edge
     potential_hops = game_state.in_bound_for_hop(current_index, restricted_directions)
-    print(f"start index: {start_index}, current index: {current_index}, last dir: {last_direction}")
-    print(potential_hops)
     for direction in potential_hops:
         # check we haven't gone backwards (left -> right or right -> left)
         if direction + last_direction.value != 0:
