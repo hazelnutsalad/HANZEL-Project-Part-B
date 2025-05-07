@@ -1,6 +1,6 @@
 
-from agent2.GameState import GameState, Frog, DirectionOffset, PlayerColour
-from agent2.Move import *
+from agent3.GameState import GameState, Frog, DirectionOffset, PlayerColour
+from agent3.Move import *
 
 
 VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOffset.DownLeft, DirectionOffset.Left, DirectionOffset.Right]

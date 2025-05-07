@@ -1,17 +1,13 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
 
-
-"""
-TO-DO:
-    1. Fix update method to reflect new representation of game (No longer using Board Class, but optimised GameState Class
-"""
-
 import random
 import time
+import heapq
 
 from agent3.findmove import generate_all_moves
 from agent3.GameState import *
+from agent3.Move import *
 from referee.game import Direction, \
     Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
@@ -56,14 +52,14 @@ class Agent:
         end = time.time()
         print(f"Move took {end-start} seconds to compute\n")
 
-        if potential_moves:
-            if len(potential_moves) == 1:
-                print("one move left")
-                print(potential_moves)
-            return random.choice(potential_moves).convert_to_move_action()
-        else:
-            return GrowAction()
+        # don't even really need heapq maybe ?? just loop over array once to find best move
 
+        # slightly cursed way to convert to priority queue for now (-ve bc heapq is minheap)
+        heapq.heapify(potential_moves)
+        heapq.heappush(potential_moves, Grow())
+
+        return heapq.heappop(potential_moves).to_action()
+        
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
         This method is called by the referee after a player has taken their
