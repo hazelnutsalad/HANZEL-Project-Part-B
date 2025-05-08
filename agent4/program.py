@@ -37,7 +37,7 @@ class Agent:
         to take an action. It must always return an action object. 
         """
 
-        DEPTH = 4
+        DEPTH = 2
 
         start = time.time()
 

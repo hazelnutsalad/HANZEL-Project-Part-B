@@ -111,7 +111,7 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
     best_action = None
     ##Check whether terminal or maximum depth has been reached
     if game_state.goal_test(player_colour) or search_depth == 0:
-            return game_state.calculate_utility()
+            return game_state.calculate_utility(player_colour)
 
     #If Playing MAX
     if player_colour == PlayerColour.RED:

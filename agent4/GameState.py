@@ -237,26 +237,31 @@ class GameState:
             print("action is not Grow or Move when trying to update board in minimax")
             exit(-1)
 
-    def calculate_utility(self):
-        # #Red is MAX, Blue is MIN
-        # blue_score = 0
-        # red_score = 0
-        # for i in self.red_frogs:
-        #     red_score += i.location % BOARD_N
-        # for i in self.blue_frogs:
-        #     blue_score += 8 - (i.location % BOARD_N)
-        # return red_score - blue_score
-        return 0
+    def calculate_utility(self, colour: PlayerColour):
+        # simple utility function that returns average distance frogs are from their starting state
+        blue_score = 0
+        red_score = 0
+
+        for i in self.red_frogs:
+            red_score += i.location // BOARD_N
+        for i in self.blue_frogs:
+            blue_score += 8 - (i.location // BOARD_N)
+        match colour:
+            case PlayerColour.RED:
+                return blue_score - red_score
+            case PlayerColour.BLUE:
+                return red_score - blue_score
+
 
     def goal_test(self, player_colour: PlayerColour):
         goal_test = True
         if player_colour == PlayerColour.RED:
             for i in self.red_frogs:
-                if i.location // BOARD_N != 0:
+                if i.location // BOARD_N != BOARD_N-1:
                     goal_test = False
         else:
                 for i in self.blue_frogs:
-                    if i.location // BOARD_N != BOARD_N -1:
+                    if i.location // BOARD_N != 0:
                         goal_test = False
         return goal_test
 
@@ -303,11 +308,7 @@ class Grow(Action):
     Represents a grow action, for now we set evaluation to zero
     """
     def __init__(self, colour: PlayerColour, game_state: GameState):
-        if colour == PlayerColour.RED:
-            start_index = game_state.red_frogs[0].location
-        else:
-            start_index = game_state.blue_frogs[0].location
-        self.evaluation = game_state.calculate_utility()
+        self.evaluation = game_state.calculate_utility(colour)
 
     def to_action(self):
         return GrowAction()
@@ -316,21 +317,29 @@ class Move(Action):
     """
     Abstract base class for move actions with shared attributes
     """
-    def __init__(self, start_index: int, end_index: int, evaluation: int):
-            self.start_index = start_index
-            self.end_index = end_index
+    def __init__(self, evaluation: int):
             self.evaluation = evaluation
+    
+    def get_colour(self, game_state: GameState):
+        match game_state.board[self.start_index]:
+            case 'B':
+                return PlayerColour.BLUE
+            case 'R':
+                return PlayerColour.RED
 
 class Step(Move):
     """
     Represents a single step onto a lilypad
     """
     def __init__(self, start_index: int, direction_offset: DirectionOffset, game_state: GameState):
-        end_index = start_index + direction_offset.value
-
-        evaluation = game_state.calculate_utility()
-        super().__init__(start_index, end_index, evaluation)
+        self.start_index = start_index
+        self.end_index = start_index + direction_offset.value
         self.direction_offset = direction_offset
+
+        colour = self.get_colour(game_state)
+        evaluation = game_state.calculate_utility(colour)
+        super().__init__(evaluation)
+        
 
     # note we have direction NOT as a list
     def to_action(self):
@@ -342,10 +351,14 @@ class Hop(Move):
     Represents (potentially multiple) hop
     """    
     def __init__(self, start_index: int, direction_offsets: list[DirectionOffset], game_state: GameState):
-        end_index = start_index + sum([2 * offset.value for offset in direction_offsets])
-        evaluation = game_state.calculate_utility()
-        super().__init__(start_index, end_index, evaluation)
+        self.start_index = start_index
+        self.end_index = start_index + sum([2 * offset.value for offset in direction_offsets])
         self.direction_offsets = direction_offsets
+
+        colour = self.get_colour(game_state)
+        evaluation = game_state.calculate_utility(colour)
+        super().__init__(evaluation)
+        
 
 
     # note we have direction as list
