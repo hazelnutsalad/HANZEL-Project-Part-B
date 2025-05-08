@@ -101,7 +101,7 @@ def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_
 
     potential_actions = generate_all_moves(game_state, player_colour)
 
-    print(f"remaining time for depth {search_depth} is {counter.remaining_time}")
+    # print(f"remaining time for depth {search_depth} is {counter.remaining_time}")
 
     ##Initialising values
     best_action = None
@@ -188,7 +188,7 @@ def minimax_with_id_search(game_state: GameState, player_colour: PlayerColour, t
         depth += 1
     
     # print the maximum depth we got to in this search
-    # print(f"searched to a depth of {depth-1}")
+    print(f"searched to a depth of {depth-1}")
     
     return decision
 

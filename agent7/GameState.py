@@ -251,63 +251,41 @@ class GameState:
     def calculate_utility(self, colour: PlayerColour):
         # simple utility function that returns average distance frogs are from their starting state
         FROG_WEIGHT = 10
-        LILYPAD_WEIGHT = 0
+        FINAL_ROW_WEIGHT = 10
+        LONELY_WEIGHT = 2
 
         blue_score = 0
         red_score = 0
 
-        for i in self.red_frogs:
-            #Making it so it doesn't like having a blue frog in front of it but does like a red frog
-            forward_locations = self.get_adjacent_indices_restricted(i.location, [DirectionOffset.DownLeft, DirectionOffset.DownRight, DirectionOffset.Down])
-            for j in forward_locations:
-                match(self.board[j]):
-                    case('B'):
-                        red_score -= 2
-                    case('R'):
-                        red_score += 1
-            red_score += FROG_WEIGHT * (i.location // BOARD_N)
-            # Adding extra score for frogs in goal row, I don't know what impact this has
-            if i.location % BOARD_N == BOARD_N:
-                red_score += 3
-        for i in self.blue_frogs:
-            # reverse of the above
-            forward_locations = self.get_adjacent_indices_restricted(i.location, [DirectionOffset.UpLeft, DirectionOffset.UpRight, DirectionOffset.Up])
-            for j in forward_locations:
-                match(self.board[j]):
-                    case('B'):
-                        blue_score += 1
-                    case('R'):
-                        blue_score -=2
-            blue_score += FROG_WEIGHT * (8 - (i.location // BOARD_N))
-            # Adding extra score for frogs in goal row, I don't know how much impact this has
-            if i.location % BOARD_N == 0:
-                blue_score += 3
+        # used to encourage ai to not leave frogs behind
+        lowest_red_frog_rank = BOARD_N - 1
+        highest_blue_frog_rank = 0
 
-        # adding term to make moving frogs that are in the back forward better
-        red_score -= (8 - min([frog.location for frog in self.red_frogs])) // 8
-        blue_score -= min([frog.location for frog in self.blue_frogs]) // 8
+        for frog in self.red_frogs:
+            rank = frog.location // BOARD_N
 
+            red_score += FROG_WEIGHT * rank
 
+            if rank == BOARD_N - 1:
+                red_score += FINAL_ROW_WEIGHT
 
-        # extra term to dislike having lilypads close to their side of board 
-        # only does 2 rows so we don't have to loop over entire board
-        # NOTE: not sure if this makes much of a difference at all rn
-        # for i in range(0, 8):
-        #     if self.board[i] == '*':
-        #         blue_score += 2 * LILYPAD_WEIGHT
+            if rank < lowest_red_frog_rank:
+                lowest_red_frog_rank = rank
         
-        # for i in range(8, 16):
-        #     if self.board[i] == '*':
-        #         blue_score += LILYPAD_WEIGHT
-        
-        # for i in range(56, 64):
-        #     if self.board[i] == '*':
-        #         red_score += 2 * LILYPAD_WEIGHT
-        
-        # for i in range(48, 56):
-        #     if self.board[i] == '*':
-        #         red_score += LILYPAD_WEIGHT
+        for frog in self.blue_frogs:
+            rank = frog.location // BOARD_N
+            blue_score += FROG_WEIGHT * (8 - rank)
 
+            if rank == 0:
+                red_score += FINAL_ROW_WEIGHT
+
+            if rank > highest_blue_frog_rank:
+                highest_blue_frog_rank = rank
+        
+        # adjust score based on furthest back frog of each colour
+        red_score -= LONELY_WEIGHT * (BOARD_N - 1 - lowest_red_frog_rank)
+        blue_score -= LONELY_WEIGHT * highest_blue_frog_rank
+        
         match colour:
             case PlayerColour.RED:
                 return red_score - blue_score
