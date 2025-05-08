@@ -7,7 +7,6 @@ import heapq
 
 from agent3.findmove import generate_all_moves, minimax_decision
 from agent3.GameState import *
-from agent3.Move import *
 from referee.game import Direction, \
     Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
@@ -44,6 +43,8 @@ class Agent:
         to take an action. It must always return an action object. 
         """
 
+        DEPTH = 4
+
         start = time.time()
 
         potential_moves = generate_all_moves(self.game, self.colour)
@@ -58,7 +59,7 @@ class Agent:
         # heapq.heappush(potential_moves, Grow(self.colour, self.game))
 
         # return heapq.heappop(potential_moves).to_action()
-        return minimax_decision(self.game, self.colour, 3).to_action()
+        return minimax_decision(self.game, self.colour, DEPTH).to_action()
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """

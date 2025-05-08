@@ -1,7 +1,13 @@
 from enum import Enum
+from abc import ABC
 
-from agent3.direction import DirectionOffset
-from referee.game import BOARD_N, Coord, MoveAction
+from agent3.DirectionOffset import DirectionOffset
+from referee.game import BOARD_N, Coord, MoveAction, GrowAction
+
+
+# defining this here and redefining later on so can compile
+class Action(ABC):
+    pass
 
 
 class PlayerColour(Enum):
@@ -152,7 +158,8 @@ class GameState:
                 for frog in self.blue_frogs:
                     self.grow_around_frog(frog.location)
 
-    def apply_action(self, colour: PlayerColour, action: MoveAction):
+    # takes in their Action (MoveAction or GrowAction) to update our board
+    def update_game_state(self, colour: PlayerColour, action: MoveAction | GrowAction):
         if isinstance(action, MoveAction):
             self.apply_move_action(colour, action)
         else:
@@ -191,6 +198,35 @@ class GameState:
                     if frog.location == start_index:
                         frog.apply_move(end_index)
                         self.board[end_index] = 'B'
+
+    # take in our action to update our board (used in minimax search)
+    def apply_action(self, colour: PlayerColour, action: Action):
+        # move actions
+        if isinstance(action, Move):
+            # set current coordinate to empty
+            self.board[action.start_index] = '*'
+
+            # find frog and move it to new location
+            match colour:
+                case PlayerColour.RED:
+                    for frog in self.red_frogs:
+                        if frog.location == action.start_index:
+                            frog.apply_move(action.end_index)
+                            self.board[action.end_index] = 'R'
+                case PlayerColour.BLUE:
+                    for frog in self.blue_frogs:
+                        if frog.location == action.start_index:
+                            frog.apply_move(action.end_index)
+                            self.board[action.end_index] = 'B'
+        
+        # grow action
+        elif isinstance(action, Grow):
+            self.apply_grow_action(colour)
+        
+        # for debugging: if our action is not a grow or move raise error
+        else:
+            print("action is not Grow or Move when trying to update board in minimax")
+            exit(-1)
 
     def calculate_utility(self):
         # #Red is MAX, Blue is MIN
@@ -232,3 +268,78 @@ class Frog:
     # applies move to frog by setting location to end_index
     def apply_move(self, end_index: int):
         self.location = end_index
+
+"""
+Putting Action class stuff here to fix circular import
+"""
+
+
+from abc import ABC, abstractmethod
+
+# abstract base class for our moves, contains evaluation attribute
+class Action(ABC):
+
+    # abstract method to convert to their action
+    @abstractmethod
+    def to_action(self):
+        pass
+
+    # compare dunder method
+    def __lt__(self, other):
+        return self.evaluation > other.evaluation
+
+
+class Grow(Action):
+    """
+    Represents a grow action, for now we set evaluation to zero
+    """
+    def __init__(self, colour: PlayerColour, game_state: GameState):
+        if colour == PlayerColour.RED:
+            start_index = game_state.red_frogs[0].location
+        else:
+            start_index = game_state.blue_frogs[0].location
+        self.evaluation = game_state.calculate_utility()
+
+    def to_action(self):
+        return GrowAction()
+    
+class Move(Action):
+    """
+    Abstract base class for move actions with shared attributes
+    """
+    def __init__(self, start_index: int, end_index: int, evaluation: int):
+            self.start_index = start_index
+            self.end_index = end_index
+            self.evaluation = evaluation
+
+class Step(Move):
+    """
+    Represents a single step onto a lilypad
+    """
+    def __init__(self, start_index: int, direction_offset: DirectionOffset, game_state: GameState):
+        end_index = start_index + direction_offset.value
+
+        evaluation = game_state.calculate_utility()
+        super().__init__(start_index, end_index, evaluation)
+        self.direction_offset = direction_offset
+
+    # note we have direction NOT as a list
+    def to_action(self):
+        return MoveAction(GameState.indexToCoord(self.start_index),
+                           self.direction_offset.convert_to_direction())
+
+class Hop(Move):
+    """
+    Represents (potentially multiple) hop
+    """    
+    def __init__(self, start_index: int, direction_offsets: list[DirectionOffset], game_state: GameState):
+        end_index = start_index + sum([2 * offset.value for offset in direction_offsets])
+        evaluation = game_state.calculate_utility()
+        super().__init__(start_index, end_index, evaluation)
+        self.direction_offsets = direction_offsets
+
+
+    # note we have direction as list
+    def to_action(self):
+        return MoveAction(GameState.indexToCoord(self.start_index), 
+                        [offset.convert_to_direction() for offset in self.direction_offsets])
