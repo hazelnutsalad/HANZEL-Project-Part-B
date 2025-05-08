@@ -11,9 +11,11 @@ VALID_MOVES_BLUE = [DirectionOffset.UpRight, DirectionOffset.Up, DirectionOffset
 class Counter:
     def __init__(self, time_per_move):
         self.remaining_time = time_per_move
+        self.time_last_updated = time.time()
     
-    def update(self, start_time, end_time):
-        self.remaining_time -= end_time - start_time
+    def update(self):
+        self.remaining_time -= time.time() - self.time_last_updated
+        self.time_last_updated = time.time()
 
 # appends possible moves one step away from this index given a list of allowable directions
 def get_adjacent_moves(game_state: GameState, index: int, 
@@ -90,7 +92,6 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
 
 #Mini Max
 def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_depth: int, counter) -> Action:
-    start_time = time.time()
 
     potential_actions = generate_all_moves(game_state, player_colour)
 
@@ -106,8 +107,7 @@ def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_
         #Making a deep copy so that changed board does not influence original board
         modified_game_state = copy.deepcopy(game_state)
         modified_game_state.apply_action(player_colour, action)
-
-        counter.update(start_time, time.time())
+        
         action_value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, player_colour, counter)
 
         ##Update based on result
@@ -119,7 +119,7 @@ def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_
     
 # player_colour is maximising player would be start true and alternate each time probably
 def minimax_value(game_state: GameState, player_colour: PlayerColour, search_depth, alpha, beta, maximising_player: bool, counter) -> int:
-    start_time = time.time()
+    counter.update()
 
     # terminate if we run out of time or reach depth 0
     if counter.remaining_time < 0 or search_depth == 0:
@@ -139,11 +139,6 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
             modified_game_state = copy.deepcopy(game_state)
             modified_game_state.apply_action(player_colour, action)
             
-            # reduce time before we call minmax_value again
-            counter.update(start_time, time.time())
-
-            # print(f"remaining time in a minimax recursion is {remaining_time}")
-
             value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, False, counter)
             max_value = max(max_value, value)
 
@@ -161,9 +156,6 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
             # copy board and apply action
             modified_game_state = copy.deepcopy(game_state)
             modified_game_state.apply_action(player_colour.next(), action)
-
-            # reduce time before we call minimax_value again
-            counter.update(start_time, time.time())
 
             value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, True, counter)
             min_value = min(min_value, value)

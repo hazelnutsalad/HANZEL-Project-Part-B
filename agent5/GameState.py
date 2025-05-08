@@ -251,43 +251,40 @@ class GameState:
     def calculate_utility(self, colour: PlayerColour):
         # simple utility function that returns average distance frogs are from their starting state
         FROG_WEIGHT = 10
-        LILYPAD_WEIGHT = 1
+        LILYPAD_WEIGHT = 0
 
         blue_score = 0
         red_score = 0
 
-        # trying to use the square of distance not distance which is maybe better idk??
-        # prioritises moving individual frogs further down field
-
         for i in self.red_frogs:
-            red_score += FROG_WEIGHT * (i.location // BOARD_N) * (i.location // BOARD_N)
+            red_score += FROG_WEIGHT * (i.location // BOARD_N)
         for i in self.blue_frogs:
-            blue_score += FROG_WEIGHT * (8 - (i.location // BOARD_N)) * (8 - (i.location // BOARD_N))
+            blue_score += FROG_WEIGHT * (8 - (i.location // BOARD_N))
 
         # extra term to dislike having lilypads close to their side of board 
         # only does 2 rows so we don't have to loop over entire board
         # NOTE: not sure if this makes much of a difference at all rn
-        for i in range(0, 8):
-            if self.board[i] == '*':
-                blue_score += 2 * LILYPAD_WEIGHT
+        # for i in range(0, 8):
+        #     if self.board[i] == '*':
+        #         blue_score += 2 * LILYPAD_WEIGHT
         
-        for i in range(8, 16):
-            if self.board[i] == '*':
-                blue_score += LILYPAD_WEIGHT
+        # for i in range(8, 16):
+        #     if self.board[i] == '*':
+        #         blue_score += LILYPAD_WEIGHT
         
-        for i in range(56, 64):
-            if self.board[i] == '*':
-                red_score += 2 * LILYPAD_WEIGHT
+        # for i in range(56, 64):
+        #     if self.board[i] == '*':
+        #         red_score += 2 * LILYPAD_WEIGHT
         
-        for i in range(48, 56):
-            if self.board[i] == '*':
-                red_score += LILYPAD_WEIGHT
+        # for i in range(48, 56):
+        #     if self.board[i] == '*':
+        #         red_score += LILYPAD_WEIGHT
 
-        match colour:
-            case PlayerColour.RED:
-                return red_score - blue_score
-            case PlayerColour.BLUE:
-                return blue_score - red_score
+        # match colour:
+        #     case PlayerColour.RED:
+        #         return red_score - blue_score
+        #     case PlayerColour.BLUE:
+        #         return blue_score - red_score
 
 
     def goal_test(self, player_colour: PlayerColour):
