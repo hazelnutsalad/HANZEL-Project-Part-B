@@ -11,8 +11,19 @@ class Action(ABC):
 
 
 class PlayerColour(Enum):
-    RED = 0
-    BLUE = 1
+    """
+    RED is truthy, BLUE is falsey
+    """
+    RED = 1
+    BLUE = 0
+
+    # switches colour
+    def next(self):
+        match self:
+            case PlayerColour.RED:
+                return PlayerColour.BLUE
+            case PlayerColour.BLUE:
+                return PlayerColour.RED
 
 
 class GameState:
@@ -248,9 +259,12 @@ class GameState:
             blue_score += 8 - (i.location // BOARD_N)
         match colour:
             case PlayerColour.RED:
-                return blue_score - red_score
-            case PlayerColour.BLUE:
                 return red_score - blue_score
+            case PlayerColour.BLUE:
+                return blue_score - red_score
+            case _:
+                Exception("Invalid player colour in calculate_utility")
+                exit(-1)
 
 
     def goal_test(self, player_colour: PlayerColour):

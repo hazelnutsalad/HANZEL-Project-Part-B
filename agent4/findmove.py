@@ -83,64 +83,76 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
 #Mini Max
 def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_depth: int) -> Action:
 
+    potential_actions = generate_all_moves(game_state, player_colour)
+
     ##Initialising values
     best_action = None
-    best_value = float('-inf') if player_colour == PlayerColour.RED else float('inf')
-
-    potential_actions = generate_all_moves(game_state, player_colour)
+    best_value = float('-inf')
+    alpha = float('-inf')
+    beta = float('inf')
 
     for action in potential_actions:
         #Making a deep copy so that changed board does not influence original board
         modified_game_state = copy.deepcopy(game_state)
         modified_game_state.apply_action(player_colour, action)
 
-        action_value = minimax_value(modified_game_state, player_colour, search_depth - 1, float('-inf'), float('inf'))
+        action_value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, player_colour)
 
         ##Update based on result
-        if player_colour == PlayerColour.RED and action_value > best_value:
-            best_value = action_value
-            best_action = action
-        elif player_colour == PlayerColour.BLUE and action_value < best_value:
+        if action_value > best_value:
             best_value = action_value
             best_action = action
 
     return best_action
-
-
-def minimax_value(game_state: GameState, player_colour: PlayerColour, search_depth, alpha, beta) -> int:
-    best_action = None
-    ##Check whether terminal or maximum depth has been reached
-    if game_state.goal_test(player_colour) or search_depth == 0:
-            return game_state.calculate_utility(player_colour)
-
-    #If Playing MAX
-    if player_colour == PlayerColour.RED:
+    
+# player_colour is maximising player would be start true and alternate each time probably
+def minimax_value(game_state: GameState, player_colour: PlayerColour, search_depth, alpha, beta, maximising_player: bool) -> int:
+    # terminate if we reach search depth or goal state
+    if search_depth == 0:
+        return game_state.calculate_utility(player_colour)
+    
+    # dumb way to make it like winning
+    if game_state.goal_test(player_colour):
+        return game_state.calculate_utility(player_colour) * 100
+    
+    
+    # if playing MAX
+    if maximising_player:
         max_value = float('-inf')
+        # generate all children of this board state
         for action in generate_all_moves(game_state, player_colour):
+            # copy board and apply this action to it
             modified_game_state = copy.deepcopy(game_state)
             modified_game_state.apply_action(player_colour, action)
-            value = minimax_value(modified_game_state, PlayerColour.BLUE, search_depth - 1, alpha, beta)
+
+            value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, False)
             max_value = max(max_value, value)
+
+            # set alpha to the new maximum value for this branch
             alpha = max(alpha, max_value)
+            # beta cut off
             if beta <= alpha:
                 break
 
         return max_value
     
-    #Else playing MIN
     else:
         min_value = float('inf')
-        for action in generate_all_moves(game_state, player_colour):
+        for action in generate_all_moves(game_state, player_colour.next()):
+            # copy board and apply action
             modified_game_state = copy.deepcopy(game_state)
-            modified_game_state.apply_action(player_colour, action)
-            value = minimax_value(modified_game_state, PlayerColour.RED, search_depth - 1, alpha, beta)
+            modified_game_state.apply_action(player_colour.next(), action)
+
+            value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, True)
             min_value = min(min_value, value)
+
+            # set beta to new minimum value for this branch
             beta = min(beta, min_value)
+            # alpha cut off
             if beta <= alpha:
                 break
 
         return min_value
-
 
 
 
