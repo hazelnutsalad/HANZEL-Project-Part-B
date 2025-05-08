@@ -272,7 +272,7 @@ class GameState:
         FROG_WEIGHT = 10
         FINAL_ROW_WEIGHT = 20
         LONELY_WEIGHT = 10
-        HOP_WEIGHT = 1
+        HOP_WEIGHT = 3
         WIN_WEIGHT = 100
 
         blue_score = 0
@@ -296,7 +296,7 @@ class GameState:
                     case('B'):
                         red_score -= HOP_WEIGHT
                     case('R'):
-                        red_score += HOP_WEIGHT
+                        red_score += 2 * HOP_WEIGHT
         
         for frog in self.blue_frogs:
             rank = frog.location // BOARD_N
@@ -309,7 +309,7 @@ class GameState:
             for j in forward_locations:
                 match(self.board[j]):
                     case('B'):
-                        blue_score += HOP_WEIGHT
+                        blue_score += 2 * HOP_WEIGHT
                     case('R'):
                         blue_score -= HOP_WEIGHT
         
