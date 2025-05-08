@@ -136,7 +136,7 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
     
     # dumb way to make it like winning
     if game_state.goal_test(player_colour):
-        return game_state.calculate_utility(player_colour) * 10
+        return game_state.calculate_utility(player_colour) * 100
     
     
     # if playing MAX

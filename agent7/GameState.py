@@ -49,6 +49,9 @@ class GameState:
         self.red_frogs = [Frog(index, PlayerColour.RED) for index in red_frog_locations]
         self.blue_frogs = [Frog(index, PlayerColour.BLUE) for index in blue_frog_locations]
 
+        self.red_frogs_at_goal = 0
+        self.blue_frogs_at_goal = 0
+
     def __str__(self):
         string = ''
         for i in range(0, BOARD_N):
@@ -233,11 +236,21 @@ class GameState:
                         if frog.location == action.start_index:
                             frog.apply_move(action.end_index)
                             self.board[action.end_index] = 'R'
+
+                            # at end
+                            if action.end_index // BOARD_N == BOARD_N - 1:
+                                frog.at_goal = True
+                                self.red_frogs_at_goal += 1
                 case PlayerColour.BLUE:
                     for frog in self.blue_frogs:
                         if frog.location == action.start_index:
                             frog.apply_move(action.end_index)
                             self.board[action.end_index] = 'B'
+
+                            # at end
+                            if action.end_index // BOARD_N == 0:
+                                frog.at_goal = True
+                                self.blue_frogs_at_goal += 1
         
         # grow action
         elif isinstance(action, Grow):
@@ -253,7 +266,7 @@ class GameState:
         FROG_WEIGHT = 10
         FINAL_ROW_WEIGHT = 10
         LONELY_WEIGHT = 10
-        HOP_WEIGHT = 3
+        HOP_WEIGHT = 1
 
         blue_score = 0
         red_score = 0
@@ -311,16 +324,11 @@ class GameState:
 
 
     def goal_test(self, player_colour: PlayerColour):
-        goal_test = True
-        if player_colour == PlayerColour.RED:
-            for i in self.red_frogs:
-                if i.location // BOARD_N != BOARD_N-1:
-                    goal_test = False
-        else:
-                for i in self.blue_frogs:
-                    if i.location // BOARD_N != 0:
-                        goal_test = False
-        return goal_test
+        match player_colour:
+            case PlayerColour.RED:
+                return self.red_frogs_at_goal == 6
+            case PlayerColour.BLUE:
+                return self.blue_frogs_at_goal == 6
 
 
 
