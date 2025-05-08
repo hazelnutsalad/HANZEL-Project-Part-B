@@ -7,6 +7,13 @@ import time
 VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOffset.DownLeft, DirectionOffset.Left, DirectionOffset.Right]
 VALID_MOVES_BLUE = [DirectionOffset.UpRight, DirectionOffset.Up, DirectionOffset.UpLeft, DirectionOffset.Left, DirectionOffset.Right]
 
+# literally me being dumb and not knowing how to make time persist through function so i will make class
+class Counter:
+    def __init__(self, time_per_move):
+        self.remaining_time = time_per_move
+    
+    def update(self, start_time, end_time):
+        self.remaining_time -= end_time - start_time
 
 # appends possible moves one step away from this index given a list of allowable directions
 def get_adjacent_moves(game_state: GameState, index: int, 
@@ -82,9 +89,12 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
     return all_moves
 
 #Mini Max
-def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_depth: int) -> Action:
+def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_depth: int, counter) -> Action:
+    start_time = time.time()
 
     potential_actions = generate_all_moves(game_state, player_colour)
+
+    print(f"remaining time for depth {search_depth} is {counter.remaining_time}")
 
     ##Initialising values
     best_action = None
@@ -97,7 +107,8 @@ def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_
         modified_game_state = copy.deepcopy(game_state)
         modified_game_state.apply_action(player_colour, action)
 
-        action_value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, player_colour)
+        counter.update(start_time, time.time())
+        action_value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, player_colour, counter)
 
         ##Update based on result
         if action_value > best_value:
@@ -107,14 +118,16 @@ def minimax_decision(game_state: GameState, player_colour: PlayerColour, search_
     return best_action
     
 # player_colour is maximising player would be start true and alternate each time probably
-def minimax_value(game_state: GameState, player_colour: PlayerColour, search_depth, alpha, beta, maximising_player: bool) -> int:
-    # terminate if we reach search depth or goal state
-    if search_depth == 0:
+def minimax_value(game_state: GameState, player_colour: PlayerColour, search_depth, alpha, beta, maximising_player: bool, counter) -> int:
+    start_time = time.time()
+
+    # terminate if we run out of time or reach depth 0
+    if counter.remaining_time < 0 or search_depth == 0:
         return game_state.calculate_utility(player_colour)
     
     # dumb way to make it like winning
     if game_state.goal_test(player_colour):
-        return game_state.calculate_utility(player_colour) * 100
+        return game_state.calculate_utility(player_colour) * 1000
     
     
     # if playing MAX
@@ -125,8 +138,13 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
             # copy board and apply this action to it
             modified_game_state = copy.deepcopy(game_state)
             modified_game_state.apply_action(player_colour, action)
+            
+            # reduce time before we call minmax_value again
+            counter.update(start_time, time.time())
 
-            value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, False)
+            # print(f"remaining time in a minimax recursion is {remaining_time}")
+
+            value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, False, counter)
             max_value = max(max_value, value)
 
             # set alpha to the new maximum value for this branch
@@ -134,7 +152,7 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
             # beta cut off
             if beta <= alpha:
                 break
-
+        
         return max_value
     
     else:
@@ -144,7 +162,10 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
             modified_game_state = copy.deepcopy(game_state)
             modified_game_state.apply_action(player_colour.next(), action)
 
-            value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, True)
+            # reduce time before we call minimax_value again
+            counter.update(start_time, time.time())
+
+            value = minimax_value(modified_game_state, player_colour, search_depth - 1, alpha, beta, True, counter)
             min_value = min(min_value, value)
 
             # set beta to new minimum value for this branch
@@ -156,25 +177,20 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
         return min_value
 
 # updated version of minimax_decision that uses iterative deepening search with a time limit
+# NOTE: need to order moves to make this much much more useful
 def minimax_with_id_search(game_state: GameState, player_colour: PlayerColour, time_per_move) -> Action:
-    remaining_time = time_per_move
+    counter = Counter(time_per_move)
     depth = 1
-    while remaining_time > 0:
-        start_time = time.time()
+    while counter.remaining_time > 0:
 
         # run minimax search with this depth
-        decision = minimax_decision(game_state, player_colour, depth)
+        decision = minimax_decision(game_state, player_colour, depth, counter)
 
-        end_time = time.time()
-        
-        print(f"took {end_time - start_time} seconds to search to a depth of {depth}")
-
-        # reduce remaining time by the time this depth took to search and increment depth
-        remaining_time -= end_time - start_time
+        # increment depth
         depth += 1
     
     # print the maximum depth we got to in this search
-    print(f"searched to a depth of {depth-1}")
+    # print(f"searched to a depth of {depth-1}")
     
     return decision
 

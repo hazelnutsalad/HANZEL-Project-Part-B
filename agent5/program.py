@@ -37,13 +37,13 @@ class Agent:
         to take an action. It must always return an action object. 
         """
 
-        DEPTH = 2
-        TIME_PER_MOVE = 0.3
+        # could potentially dynamically update this based on remaining time in game
+        MAX_TIME_PER_MOVE = 2
 
         start = time.time()
 
         # potential_moves = generate_all_moves(self.game, self.colour)
-        decision = minimax_with_id_search(self.game, self.colour, TIME_PER_MOVE)
+        decision = minimax_with_id_search(self.game, self.colour, MAX_TIME_PER_MOVE)
 
         end = time.time()
         print(f"Move took {end-start} seconds to compute\n")
