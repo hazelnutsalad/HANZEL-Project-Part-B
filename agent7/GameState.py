@@ -216,11 +216,17 @@ class GameState:
                     if frog.location == start_index:
                         frog.apply_move(end_index)
                         self.board[end_index] = 'R'
+                        if end_index // BOARD_N == BOARD_N - 1:
+                                frog.at_goal = True
+                                self.red_frogs_at_goal += 1
             case PlayerColour.BLUE:
                 for frog in self.blue_frogs:
                     if frog.location == start_index:
                         frog.apply_move(end_index)
                         self.board[end_index] = 'B'
+                        if end_index // BOARD_N == 0:
+                                frog.at_goal = True
+                                self.blue_frogs_at_goal += 1
 
     # take in our action to update our board (used in minimax search)
     def apply_action(self, colour: PlayerColour, action: Action):
@@ -264,9 +270,10 @@ class GameState:
     def calculate_utility(self, colour: PlayerColour):
         # simple utility function that returns average distance frogs are from their starting state
         FROG_WEIGHT = 10
-        FINAL_ROW_WEIGHT = 10
+        FINAL_ROW_WEIGHT = 20
         LONELY_WEIGHT = 10
         HOP_WEIGHT = 1
+        WIN_WEIGHT = 100
 
         blue_score = 0
         red_score = 0
@@ -279,9 +286,6 @@ class GameState:
             rank = frog.location // BOARD_N
 
             red_score += FROG_WEIGHT * rank
-
-            if rank == BOARD_N - 1:
-                red_score += FINAL_ROW_WEIGHT
 
             if rank < lowest_red_frog_rank:
                 lowest_red_frog_rank = rank
@@ -298,9 +302,6 @@ class GameState:
             rank = frog.location // BOARD_N
             blue_score += FROG_WEIGHT * (8 - rank)
 
-            if rank == 0:
-                blue_score += FINAL_ROW_WEIGHT
-
             if rank > highest_blue_frog_rank:
                 highest_blue_frog_rank = rank
 
@@ -315,11 +316,19 @@ class GameState:
         # adjust score based on furthest back frog of each colour
         red_score -= LONELY_WEIGHT * (BOARD_N - 1 - lowest_red_frog_rank)
         blue_score -= LONELY_WEIGHT * highest_blue_frog_rank
+
+        # adjust score based on number of frogs at end
+        red_score += FINAL_ROW_WEIGHT * self.red_frogs_at_goal
+        blue_score += FINAL_ROW_WEIGHT * self.blue_frogs_at_goal
         
         match colour:
             case PlayerColour.RED:
+                if self.goal_test(colour):
+                    red_score += WIN_WEIGHT
                 return red_score - blue_score
             case PlayerColour.BLUE:
+                if self.goal_test(colour):
+                    blue_score += WIN_WEIGHT
                 return blue_score - red_score
 
 
