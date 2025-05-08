@@ -261,6 +261,10 @@ class GameState:
         for i in self.blue_frogs:
             blue_score += FROG_WEIGHT * (8 - (i.location // BOARD_N))
 
+        # adding term to make moving frogs that are in the back forward better
+        red_score -= (8 - min([frog.location for frog in self.red_frogs])) // 8
+        blue_score -= min([frog.location for frog in self.blue_frogs]) // 8
+
         # extra term to dislike having lilypads close to their side of board 
         # only does 2 rows so we don't have to loop over entire board
         # NOTE: not sure if this makes much of a difference at all rn
@@ -280,11 +284,11 @@ class GameState:
         #     if self.board[i] == '*':
         #         red_score += LILYPAD_WEIGHT
 
-        # match colour:
-        #     case PlayerColour.RED:
-        #         return red_score - blue_score
-        #     case PlayerColour.BLUE:
-        #         return blue_score - red_score
+        match colour:
+            case PlayerColour.RED:
+                return red_score - blue_score
+            case PlayerColour.BLUE:
+                return blue_score - red_score
 
 
     def goal_test(self, player_colour: PlayerColour):

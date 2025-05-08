@@ -16,6 +16,9 @@ class Counter:
     def update(self):
         self.remaining_time -= time.time() - self.time_last_updated
         self.time_last_updated = time.time()
+    
+    def out_of_time(self):
+        return self.remaining_time < 0
 
 # appends possible moves one step away from this index given a list of allowable directions
 def get_adjacent_moves(game_state: GameState, index: int, 
@@ -122,7 +125,7 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
     counter.update()
 
     # terminate if we run out of time or reach depth 0
-    if counter.remaining_time < 0 or search_depth == 0:
+    if counter.out_of_time() or search_depth == 0:
         return game_state.calculate_utility(player_colour)
     
     # dumb way to make it like winning
@@ -173,7 +176,7 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
 def minimax_with_id_search(game_state: GameState, player_colour: PlayerColour, time_per_move) -> Action:
     counter = Counter(time_per_move)
     depth = 1
-    while counter.remaining_time > 0:
+    while not counter.out_of_time():
 
         # run minimax search with this depth
         decision = minimax_decision(game_state, player_colour, depth, counter)
