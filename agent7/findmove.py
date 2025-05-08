@@ -20,8 +20,8 @@ class Counter:
         return self.remaining_time < 0
 
 # appends possible moves one step away from this index given a list of allowable directions
-def get_adjacent_moves(game_state: GameState, index: int, 
-                       restricted_directions: list[DirectionOffset], move_list: list[Action]):
+def get_adjacent_moves(game_state: GameState, index: int, restricted_directions: list[DirectionOffset],
+                        step_list: list[Action], hop_list: list[Action]):
     
     adjacent_squares = game_state.get_adjacent_squares_restricted(index, restricted_directions)
 
@@ -32,14 +32,14 @@ def get_adjacent_moves(game_state: GameState, index: int,
     for direction, square in adjacent_squares.items():
         # lilypad
         if square == 'L':
-            move_list.append(Step(index, direction, game_state))
+            step_list.append(Step(index, direction, game_state))
 
         # hop
         if square == 'B' or square == 'R':
             # check if next square is also in-bound
             if not game_state.is_out_of_bounds(index + direction.value, direction):
                 if game_state.board[index + direction * 2] == 'L':
-                    start_hop(game_state, index, direction, move_list, restricted_directions)
+                    start_hop(game_state, index, direction, hop_list, restricted_directions)
 
 # first time hopping we have as separate func since logic is a bit different
 def start_hop(game_state: GameState, start_index: int, start_direction: DirectionOffset,
@@ -74,7 +74,8 @@ def hop(game_state: GameState, start_index: int, move_list: list[Move],
 
 # takes in the board and player colour and outputs a list of all move_actions
 def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> list[Action] | None:
-    all_moves = []
+    step_list = []
+    hop_list = []
 
     match player_colour: 
         case PlayerColour.RED:
@@ -90,8 +91,11 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
 
     for frog in frogs:
         if not frog.at_goal:
-            get_adjacent_moves(game_state, frog.location, VALID_MOVES, all_moves)
-
+            get_adjacent_moves(game_state, frog.location, VALID_MOVES, step_list, hop_list)
+    
+    all_moves = []
+    all_moves.extend(hop_list)
+    all_moves.extend(step_list)
     all_moves.append(Grow(player_colour, game_state))
     return all_moves
 
