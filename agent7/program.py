@@ -36,7 +36,7 @@ class Agent:
         """
 
         # could potentially dynamically update this based on remaining time in game
-        MAX_TIME_PER_MOVE = 0.6
+        MAX_TIME_PER_MOVE = 0.3
 
         start = time.time()
 

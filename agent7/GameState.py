@@ -252,7 +252,8 @@ class GameState:
         # simple utility function that returns average distance frogs are from their starting state
         FROG_WEIGHT = 10
         FINAL_ROW_WEIGHT = 10
-        LONELY_WEIGHT = 2
+        LONELY_WEIGHT = 10
+        HOP_WEIGHT = 3
 
         blue_score = 0
         red_score = 0
@@ -271,16 +272,32 @@ class GameState:
 
             if rank < lowest_red_frog_rank:
                 lowest_red_frog_rank = rank
+            
+            forward_locations = self.get_adjacent_indices_restricted(frog.location, [DirectionOffset.DownLeft, DirectionOffset.DownRight, DirectionOffset.Down])
+            for j in forward_locations:
+                match(self.board[j]):
+                    case('B'):
+                        red_score -= HOP_WEIGHT
+                    case('R'):
+                        red_score += HOP_WEIGHT
         
         for frog in self.blue_frogs:
             rank = frog.location // BOARD_N
             blue_score += FROG_WEIGHT * (8 - rank)
 
             if rank == 0:
-                red_score += FINAL_ROW_WEIGHT
+                blue_score += FINAL_ROW_WEIGHT
 
             if rank > highest_blue_frog_rank:
                 highest_blue_frog_rank = rank
+
+            forward_locations = self.get_adjacent_indices_restricted(frog.location, [DirectionOffset.UpLeft, DirectionOffset.UpRight, DirectionOffset.Up])
+            for j in forward_locations:
+                match(self.board[j]):
+                    case('B'):
+                        blue_score += HOP_WEIGHT
+                    case('R'):
+                        blue_score -= HOP_WEIGHT
         
         # adjust score based on furthest back frog of each colour
         red_score -= LONELY_WEIGHT * (BOARD_N - 1 - lowest_red_frog_rank)
@@ -318,6 +335,7 @@ class Frog:
     def __init__(self, location: int, colour: PlayerColour):
         self.location = location
         self.colour = colour
+        self.at_goal = False
     
     # applies move to frog by setting location to end_index
     def apply_move(self, end_index: int):

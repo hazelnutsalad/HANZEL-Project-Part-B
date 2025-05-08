@@ -7,7 +7,6 @@ import time
 VALID_MOVES_RED = [DirectionOffset.DownRight, DirectionOffset.Down, DirectionOffset.DownLeft, DirectionOffset.Left, DirectionOffset.Right]
 VALID_MOVES_BLUE = [DirectionOffset.UpRight, DirectionOffset.Up, DirectionOffset.UpLeft, DirectionOffset.Left, DirectionOffset.Right]
 
-# literally me being dumb and not knowing how to make time persist through function so i will make class
 class Counter:
     def __init__(self, time_per_move):
         self.remaining_time = time_per_move
@@ -90,8 +89,8 @@ def generate_all_moves(game_state: GameState, player_colour: PlayerColour) -> li
             raise ValueError("Unexpected player colour")
 
     for frog in frogs:
-        # if frog.location % BOARD_N != goal_index:
-        get_adjacent_moves(game_state, frog.location, VALID_MOVES, all_moves)
+        if not frog.at_goal:
+            get_adjacent_moves(game_state, frog.location, VALID_MOVES, all_moves)
 
     all_moves.append(Grow(player_colour, game_state))
     return all_moves
@@ -133,7 +132,7 @@ def minimax_value(game_state: GameState, player_colour: PlayerColour, search_dep
     
     # dumb way to make it like winning
     if game_state.goal_test(player_colour):
-        return game_state.calculate_utility(player_colour) * 1000
+        return game_state.calculate_utility(player_colour) * 10
     
     
     # if playing MAX
