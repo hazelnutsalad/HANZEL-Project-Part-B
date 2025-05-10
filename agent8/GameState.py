@@ -1,8 +1,8 @@
 from enum import Enum
 from abc import ABC
 
-from agent7.DirectionOffset import DirectionOffset
-from referee.game import BOARD_N, Coord, MoveAction, GrowAction, PlayerColor
+from agent8.DirectionOffset import DirectionOffset
+from referee.game import BOARD_N, Coord, MoveAction, GrowAction, PlayerColor, Direction
 
 
 # defining this here and redefining later on so can compile
@@ -52,6 +52,7 @@ class GameState:
         self.red_frogs_at_goal = 0
         self.blue_frogs_at_goal = 0
 
+
     def __str__(self):
         string = ''
         for i in range(0, BOARD_N):
@@ -59,7 +60,7 @@ class GameState:
                 string += self.board[i*BOARD_N + j] + ' '
             string += '\n'
         return string
-        
+    
     # convert index to Coord
     @staticmethod
     def indexToCoord(index: int):

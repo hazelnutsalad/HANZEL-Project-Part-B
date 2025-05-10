@@ -3,8 +3,8 @@
 
 import time
 
-from agent7.findmove import minimax_with_id_search
-from agent7.GameState import *
+from agent8.findmove import minimax_with_id_search
+from agent8.GameState import *
 from referee.game import Direction, \
     Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
@@ -28,6 +28,26 @@ class Agent:
         ##Convert PlayerColor to our PlayerColour enum
         self.colour = GameState.color_to_colour(color)
 
+        # used to determine if we are using moves from opening book, or finding ourselves
+        self.in_book = True
+
+        # opening move books
+        match self.colour:
+            case PlayerColour.RED:
+                self.opening_moves =     [MoveAction(Coord(0, 3), Direction.Down), 
+                                        MoveAction(Coord(0, 5), Direction.Down),
+                                        GrowAction(),
+                                        MoveAction(Coord(0, 1), (Direction.Right, Direction.Down)),
+                                        MoveAction(Coord(0, 6), Direction.DownLeft),
+                                        GrowAction()]
+            case PlayerColour.BLUE:
+                self.opening_moves =     [MoveAction(Coord(7, 3), Direction.Up), 
+                                        MoveAction(Coord(7, 5), Direction.Up),
+                                        GrowAction(),
+                                        MoveAction(Coord(7, 1), (Direction.Right, Direction.Up)),
+                                        MoveAction(Coord(7, 6), Direction.UpLeft),
+                                        GrowAction()]
+
 
     def action(self, **referee: dict) -> Action:
         """
@@ -40,12 +60,20 @@ class Agent:
 
         start = time.time()
 
-        decision = minimax_with_id_search(self.game, self.colour, MAX_TIME_PER_MOVE)
+        if self.in_book:
+            decision = self.opening_moves.pop(0)
+
+            # if we have depleted opening book
+            if len(self.opening_moves) == 0:
+                self.in_book = False
+            
+        else:
+            decision = minimax_with_id_search(self.game, self.colour, MAX_TIME_PER_MOVE).to_action()
 
         end = time.time()
         print(f"Move took {end-start} seconds to compute\n")
 
-        return decision.to_action()
+        return decision
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
