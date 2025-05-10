@@ -37,6 +37,19 @@ class OpeningBooks:
                         MoveAction(Coord(1, 4), Direction.DownLeft),
                         GrowAction()]
     
+    red_moves_5 = [MoveAction(Coord(0, 3), Direction.Down), 
+                        MoveAction(Coord(0, 5), Direction.Down),
+                        GrowAction(),
+                        MoveAction(Coord(0, 1), (Direction.Right, Direction.Down)),
+                        MoveAction(Coord(0,2), (Direction.DownRight, Direction.Left)),
+                        MoveAction(Coord(0, 6), Direction.DownLeft),
+                        GrowAction()]
+    
+    red_moves_6 = [MoveAction(Coord(0, 3), Direction.Down), 
+                        MoveAction(Coord(0, 5), Direction.Down),
+                        GrowAction(),
+                        MoveAction(Coord(0, 1), (Direction.Right, Direction.Down))]
+    
     # blue moves
     
     blue_moves_1 = [MoveAction(Coord(7, 3), Direction.Up), 
@@ -69,7 +82,7 @@ class OpeningBooks:
     
 
     # list of all books per colour
-    red_books = [red_moves_1, red_moves_2, red_moves_3, red_moves_4]
+    red_books = [red_moves_1, red_moves_2, red_moves_3, red_moves_4, red_moves_5, red_moves_6]
     blue_books = [blue_moves_1, blue_moves_2, blue_moves_3, blue_moves_4]
 
     # methods

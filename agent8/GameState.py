@@ -52,6 +52,10 @@ class GameState:
         self.red_frogs_at_goal = 0
         self.blue_frogs_at_goal = 0
 
+        # EXPERIMENTAL
+        self.blue_open_cols = [0, 1, 2, 3, 4, 5, 6, 7]
+        self.red_open_cols = [0, 1, 2, 3, 4, 5, 6, 7]
+
 
     def __str__(self):
         string = ''
@@ -220,6 +224,9 @@ class GameState:
                         if end_index // BOARD_N == BOARD_N - 1:
                                 frog.at_goal = True
                                 self.red_frogs_at_goal += 1
+
+                                # remove from open rank
+                                self.red_open_cols.remove(frog.location % 8)
             case PlayerColour.BLUE:
                 for frog in self.blue_frogs:
                     if frog.location == start_index:
@@ -228,6 +235,9 @@ class GameState:
                         if end_index // BOARD_N == 0:
                                 frog.at_goal = True
                                 self.blue_frogs_at_goal += 1
+
+                                # remove from open rank
+                                self.blue_open_cols.remove(frog.location % 8)
 
     # take in our action to update our board (used in minimax search)
     def apply_action(self, colour: PlayerColour, action: Action):
@@ -248,6 +258,9 @@ class GameState:
                             if action.end_index // BOARD_N == BOARD_N - 1:
                                 frog.at_goal = True
                                 self.red_frogs_at_goal += 1
+
+                                # remove from open cols
+                                self.red_open_cols.remove(frog.location % 8)
                 case PlayerColour.BLUE:
                     for frog in self.blue_frogs:
                         if frog.location == action.start_index:
@@ -258,6 +271,9 @@ class GameState:
                             if action.end_index // BOARD_N == 0:
                                 frog.at_goal = True
                                 self.blue_frogs_at_goal += 1
+
+                                # remove from open cols
+                                self.blue_open_cols.remove(frog.location % 8)
         
         # grow action
         elif isinstance(action, Grow):
@@ -269,12 +285,14 @@ class GameState:
             exit(-1)
 
     def calculate_utility(self, colour: PlayerColour):
-        # simple utility function that returns average distance frogs are from their starting state
         FROG_WEIGHT = 10
         FINAL_ROW_WEIGHT = 20
-        LONELY_WEIGHT = 10
+        LONELY_WEIGHT = 20
         HOP_WEIGHT = 3
         WIN_WEIGHT = 1000
+
+        # EXPERIMENTAL: trying to weight this higher at end game 
+        OPEN_COL_WEIGHT = 2 * (self.red_frogs_at_goal + self.blue_frogs_at_goal)      
 
         blue_score = 0
         red_score = 0
@@ -285,6 +303,10 @@ class GameState:
 
         for frog in self.red_frogs:
             rank = frog.location // BOARD_N
+
+            # EXPERIMENTAL: try to encourage frog to move towards open cols at end
+            if (frog.location % 8) in self.red_open_cols:
+                red_score += OPEN_COL_WEIGHT
 
             red_score += FROG_WEIGHT * rank
 
@@ -302,6 +324,10 @@ class GameState:
         for frog in self.blue_frogs:
             rank = frog.location // BOARD_N
             blue_score += FROG_WEIGHT * (8 - rank)
+
+            # EXPERIMENTAL: try to encourage frog to move towards open cols at end
+            if (frog.location % 8) in self.blue_open_cols:
+                blue_score += OPEN_COL_WEIGHT
 
             if rank > highest_blue_frog_rank:
                 highest_blue_frog_rank = rank
