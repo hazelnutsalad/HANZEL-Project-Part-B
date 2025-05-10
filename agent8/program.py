@@ -5,6 +5,7 @@ import time
 
 from agent8.findmove import minimax_with_id_search
 from agent8.GameState import *
+from agent8.openingBooks import OpeningBooks
 from referee.game import Direction, \
     Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
@@ -31,23 +32,7 @@ class Agent:
         # used to determine if we are using moves from opening book, or finding ourselves
         self.in_book = True
 
-        # opening move books
-        match self.colour:
-            case PlayerColour.RED:
-                self.opening_moves =     [MoveAction(Coord(0, 3), Direction.Down), 
-                                        MoveAction(Coord(0, 5), Direction.Down),
-                                        GrowAction(),
-                                        MoveAction(Coord(0, 1), (Direction.Right, Direction.Down)),
-                                        MoveAction(Coord(0, 6), Direction.DownLeft),
-                                        GrowAction()]
-            case PlayerColour.BLUE:
-                self.opening_moves =     [MoveAction(Coord(7, 3), Direction.Up), 
-                                        MoveAction(Coord(7, 5), Direction.Up),
-                                        GrowAction(),
-                                        MoveAction(Coord(7, 1), (Direction.Right, Direction.Up)),
-                                        MoveAction(Coord(7, 6), Direction.UpLeft),
-                                        GrowAction()]
-
+        self.opening_moves = OpeningBooks.get_opening_book(self.colour)
 
     def action(self, **referee: dict) -> Action:
         """
