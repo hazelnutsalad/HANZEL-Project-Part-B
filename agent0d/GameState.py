@@ -286,8 +286,8 @@ class GameState:
 
     def calculate_utility(self, colour: PlayerColour):
         FROG_WEIGHT = 10
-        FINAL_ROW_WEIGHT = 20
-        LONELY_WEIGHT = 20
+        FINAL_ROW_WEIGHT = 15
+        LONELY_WEIGHT = 25
         HOP_WEIGHT = 3
         WIN_WEIGHT = 1000
 
