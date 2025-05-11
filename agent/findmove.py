@@ -1,6 +1,6 @@
 
-from agent.GameState import *
-from agent.DirectionOffset import DirectionOffset
+from part_b.submission.agent.GameState import *
+from part_b.submission.agent.DirectionOffset import DirectionOffset
 import copy
 import time
 
