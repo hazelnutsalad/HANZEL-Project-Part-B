@@ -29,6 +29,9 @@ class Agent:
         ##Convert PlayerColor to our PlayerColour enum
         self.colour = GameState.color_to_colour(color)
 
+        # used to compute time per move dynamically
+        self.remaining_moves = 150
+
         # used to determine if we are using moves from opening book, or finding ourselves
         self.in_book = True
 
@@ -40,8 +43,11 @@ class Agent:
         to take an action. It must always return an action object. 
         """
 
-        # could potentially dynamically update this based on remaining time in game
-        MAX_TIME_PER_MOVE = 0.3
+        # static time per move
+        # MAX_TIME_PER_MOVE = 0.5
+
+        # dynamic time per move
+        MAX_TIME_PER_MOVE = referee["time_remaining"] / self.remaining_moves
 
         start = time.time()
 
@@ -57,6 +63,8 @@ class Agent:
 
         end = time.time()
         print(f"Move took {end-start} seconds to compute\n")
+
+        self.remaining_moves -= 1
 
         return decision
 
