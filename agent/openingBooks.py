@@ -1,5 +1,5 @@
 from referee.game import MoveAction, GrowAction, Coord, Direction
-from agent0a.GameState import PlayerColour
+from .GameState import PlayerColour
 import random
 
 class OpeningBooks:

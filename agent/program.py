@@ -1,14 +1,13 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part B: Game Playing Agent
-# python -m referee agent agent
 
-from agent.findmove import generate_all_moves, find_frogs
-from referee.game import PlayerColor, Coord, Direction, \
-    Action, MoveAction, GrowAction, Board
+import time
 
-
-import random, time
-
+from .findmove import minimax_with_id_search
+from .GameState import *
+from .openingBooks import OpeningBooks
+from referee.game import Direction, \
+    Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
 
 
@@ -24,16 +23,19 @@ class Agent:
         Any setup and/or precomputation should be done here.
         """
 
-        self.board = Board()
+        ##Now using our own representation of the board instead of the referee's board class
+        self.game = GameState()
 
-        self._color = color
-        match color:
-            case PlayerColor.RED:
-                print("Testing: I am playing as RED")
-            case PlayerColor.BLUE:
-                print("Testing: I am playing as BLUE")
+        ##Convert PlayerColor to our PlayerColour enum
+        self.colour = GameState.color_to_colour(color)
 
+        # used to compute time per move dynamically
+        self.remaining_moves = 150
 
+        # used to determine if we are using moves from opening book, or finding ourselves
+        self.in_book = True
+
+        self.opening_moves = OpeningBooks.get_opening_book(self.colour)
 
     def action(self, **referee: dict) -> Action:
         """
@@ -41,17 +43,30 @@ class Agent:
         to take an action. It must always return an action object. 
         """
 
+        # static time per move
+        # MAX_TIME_PER_MOVE = 0.3
+
+        # dynamic time per move
+        MAX_TIME_PER_MOVE = referee["time_remaining"] / self.remaining_moves
+
         start = time.time()
 
-        potential_moves = generate_all_moves(self.board, self._color)
+        if self.in_book:
+            decision = self.opening_moves.pop(0)
+
+            # if we have depleted opening book
+            if len(self.opening_moves) == 0:
+                self.in_book = False
+            
+        else:
+            decision = minimax_with_id_search(self.game, self.colour, MAX_TIME_PER_MOVE).to_action()
 
         end = time.time()
         print(f"Move took {end-start} seconds to compute\n")
 
-        if potential_moves:
-            return random.choice(potential_moves)
-        else:
-            return GrowAction()
+        self.remaining_moves -= 1
+
+        return decision
 
     def update(self, color: PlayerColor, action: Action, **referee: dict):
         """
@@ -59,47 +74,14 @@ class Agent:
         turn. You should use it to update the agent's internal game state. 
         """
 
-        # There are two possible action types: MOVE and GROW. Below we check
-        # which type of action was played and print out the details of the
-        # action for demonstration purposes. You should replace this with your
-        # own logic to update your agent's internal game state representation.
+        colour = GameState.color_to_colour(color)
+
         match action:
             case MoveAction(coord, dirs):
-                dirs_text = ", ".join([str(dir) for dir in dirs])
-                print(f"Testing: {color} played MOVE action:")
-                print(f"  Coord: {coord}")
-                print(f"  Directions: {dirs_text}")
-
-                # set current coordinate to empty
-                self.board._state[action.coord] = CellState()
-                new_coordinate = action.coord
-
-            
-                for direction in action.directions:
-                    new_coordinate += direction
-                    cell_state = self.board._state.get(new_coordinate)
-                    if cell_state.state == "LilyPad":
-                        self.board._state[new_coordinate] = CellState()
-                    elif cell_state.state in [PlayerColor.RED, PlayerColor.BLUE]:
-                        new_coordinate += direction
-                self.board._state[new_coordinate] = CellState(color)
-                # print("What we think board looks like:")
-                # print(self.board.render(True, True))
+                self.game.apply_move_action(colour, action)
 
             case GrowAction():
-                print(f"Testing: {color} played GROW action")
-
-                frog_locations = find_frogs(self.board, color)
-
-                for frog in frog_locations:
-                    for direction in Direction:
-                        # try block handles us checking adjacent cells out of bounds
-                        try:
-                            new_coordinate = frog + direction
-                            if self.board._state.get(new_coordinate) == CellState():
-                                self.board._state[new_coordinate] = CellState("LilyPad")
-                        except ValueError:
-                            pass
+                self.game.apply_grow_action(colour)
 
             case _:
                 raise ValueError(f"Unknown action type: {action}")
