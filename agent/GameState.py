@@ -260,7 +260,9 @@ class GameState:
                                 self.red_frogs_at_goal += 1
 
                                 # remove from open cols
-                                self.red_open_cols.remove(frog.location % 8)
+                                rank = frog.location % 8
+                                if rank in self.red_open_cols:
+                                    self.red_open_cols.remove(frog.location % 8)
                 case PlayerColour.BLUE:
                     for frog in self.blue_frogs:
                         if frog.location == action.start_index:
@@ -273,7 +275,9 @@ class GameState:
                                 self.blue_frogs_at_goal += 1
 
                                 # remove from open cols
-                                self.blue_open_cols.remove(frog.location % 8)
+                                rank = frog.location % 8
+                                if rank in self.blue_open_cols:
+                                    self.blue_open_cols.remove(frog.location % 8)
         
         # grow action
         elif isinstance(action, Grow):
