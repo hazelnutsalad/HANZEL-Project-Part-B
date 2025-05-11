@@ -1,7 +1,7 @@
 from enum import Enum
 from abc import ABC
 
-from agent0a.DirectionOffset import DirectionOffset
+from agent.DirectionOffset import DirectionOffset
 from referee.game import BOARD_N, Coord, MoveAction, GrowAction, PlayerColor, Direction
 
 
