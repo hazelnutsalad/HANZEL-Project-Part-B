@@ -44,7 +44,7 @@ class Agent:
         """
 
         # static time per move
-        MAX_TIME_PER_MOVE = 0.4
+        MAX_TIME_PER_MOVE = 0.1
 
         # dynamic time per move
         # MAX_TIME_PER_MOVE = referee["time_remaining"] / self.remaining_moves
@@ -62,7 +62,8 @@ class Agent:
             decision = minimax_with_id_search(self.game, self.colour, MAX_TIME_PER_MOVE).to_action()
 
         end = time.time()
-        print(f"Move took {end-start} seconds to compute\n")
+        print(f"Move took {end-start} seconds to compute")
+        print(f"eval for {self.colour} = {self.game.calculate_utility(self.colour)}")
 
         self.remaining_moves -= 1
 

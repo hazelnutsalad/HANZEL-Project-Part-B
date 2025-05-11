@@ -62,7 +62,8 @@ class Agent:
             decision = minimax_with_id_search(self.game, self.colour, MAX_TIME_PER_MOVE).to_action()
 
         end = time.time()
-        print(f"Move took {end-start} seconds to compute\n")
+        print(f"Move took {end-start} seconds to compute")
+        print(f"eval for RED = {self.game.calculate_utility(PlayerColour.RED)}\n")
 
         self.remaining_moves -= 1
 

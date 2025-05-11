@@ -465,8 +465,6 @@ class Hop(Move):
         evaluation = game_state.calculate_utility(colour)
         super().__init__(evaluation)
         
-
-
     # note we have direction as list
     def to_action(self):
         return MoveAction(GameState.indexToCoord(self.start_index), 
