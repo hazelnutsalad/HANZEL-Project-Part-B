@@ -88,6 +88,14 @@ class OpeningBooks:
                         MoveAction(Coord(0, 4), Direction.DownRight),
                         GrowAction(),
                         MoveAction(Coord(0, 1), Direction.DownRight)]
+
+    red_moves_11 = [MoveAction(Coord(0, 3), Direction.Down),
+                    MoveAction(Coord(0, 4), Direction.Down),
+                    GrowAction(),
+                    MoveAction(Coord(0,6), (Direction.Left, Direction.DownLeft)),
+                    MoveAction(Coord(0,1), (Direction.Right, Direction.DownRight)),
+                    MoveAction(Coord(0,2), Direction.DownRight),
+                    MoveAction(Coord(0, 5), Direction.DownLeft)]
     
     
     
@@ -139,18 +147,28 @@ class OpeningBooks:
                         MoveAction(Coord(7, 4), Direction.UpRight),
                         GrowAction(),
                         MoveAction(Coord(7, 1), Direction.UpRight)]
+
+    blue_moves11 = [MoveAction(Coord(7, 3), Direction.Up),
+                    MoveAction(Coord(7,4), Direction.Up),
+                    GrowAction(),
+                    MoveAction(Coord(7,1), (Direction.Right, Direction.UpRight)),
+                    MoveAction(Coord(7,6), (Direction.Left, Direction.UpLeft)),
+                    MoveAction(Coord(7,2), Direction.UpRight),
+                    MoveAction(Coord(7,5), Direction.UpLeft) ]
     
 
     # list of all books per colour (i believe opening 9 is the best of what we have)
-    red_books = [red_moves_9a, red_moves_9b]
-    blue_books = [blue_moves_9a, blue_moves_9b]
+    red_books = [red_moves_9a, red_moves_9b, red_moves_11]
+    blue_books = [blue_moves_9a, blue_moves_9b, blue_moves11]
 
     # methods
     @staticmethod
     def get_opening_book(colour: PlayerColour):
         match colour:
             case PlayerColour.RED:
-                return random.choice(OpeningBooks.red_books)
+                return OpeningBooks.red_books[0]
+                # return random.choice(OpeningBooks.red_books)
             case PlayerColour.BLUE:
-                return random.choice(OpeningBooks.blue_books)
+                return OpeningBooks.blue_books[2]
+                # return random.choice(OpeningBooks.blue_books)
     
