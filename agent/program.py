@@ -3,9 +3,9 @@
 
 import time
 
-from part_b.submission.agent.findmove import minimax_with_id_search
-from part_b.submission.agent.GameState import *
-from part_b.submission.agent.openingBooks import OpeningBooks
+from .findmove import minimax_with_id_search
+from .GameState import *
+from .openingBooks import OpeningBooks
 from referee.game import Direction, \
     Action, MoveAction, GrowAction, PlayerColor
 from referee.game.board import CellState
