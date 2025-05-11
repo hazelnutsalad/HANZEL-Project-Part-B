@@ -33,7 +33,7 @@ class Agent:
         self.remaining_moves = 150
 
         # used to determine if we are using moves from opening book, or finding ourselves
-        self.in_book = True
+        self.in_book = False
 
         self.opening_moves = OpeningBooks.get_opening_book(self.colour)
 
@@ -44,7 +44,7 @@ class Agent:
         """
 
         # static time per move
-        MAX_TIME_PER_MOVE = 0.4
+        MAX_TIME_PER_MOVE = 0.3
 
         # dynamic time per move
         # MAX_TIME_PER_MOVE = referee["time_remaining"] / self.remaining_moves

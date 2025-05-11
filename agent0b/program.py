@@ -44,7 +44,7 @@ class Agent:
         """
 
         # static time per move
-        MAX_TIME_PER_MOVE = 0.4
+        MAX_TIME_PER_MOVE = 0.3
 
         # dynamic time per move
         # MAX_TIME_PER_MOVE = referee["time_remaining"] / self.remaining_moves
